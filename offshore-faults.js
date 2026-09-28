@@ -59,7 +59,9 @@ export const OFFSHORE = OFFSHORE_FAULTS.map((f) => {
     id: 'o' + f.id,
     num: f.tableId,
     offshore: true,
-    type: f.type,
+    // the table hedges an uncertain component in parentheses ("R(LL?)"); the site shows only the
+    // established mechanism, so the bracket is dropped everywhere the code is displayed
+    type: String(f.type || '').replace(/\([^)]*\)/g, '').trim(),
     name: f.nameC,
     nameE: f.nameE,
     coords,
@@ -81,6 +83,7 @@ export const OFFSHORE = OFFSHORE_FAULTS.map((f) => {
     slipTypeEn: slipLabel(f.type, 'en'),
     region: '海域',
     activity: 'Chen & Shyu (2025) 海域構造',
+    activityEn: 'Offshore seismogenic structure, Chen & Shyu (2025)',
     activityEn: 'Chen & Shyu (2025) offshore structure',
     lastRupture: '—',
     desc: '',

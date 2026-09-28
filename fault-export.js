@@ -469,7 +469,7 @@ function slug(f) {
  * @param opts {format: 'obj'|'xyz'|'shp'|'all', dem, bathy, temMag, contourKm}
  */
 export function exportFaults(faults, opts = {}) {
-  const { format = 'all', dem, bathy, temMag, contourKm = 2 } = opts;
+  const { format = 'all', dem, bathy, temMag, contourKm = 2, lang = 'zh' } = opts;
   const want = (k) => format === 'all' || format === k;
   const files = [];
   const usable = faults.filter((f) => (f.coords && f.coords.length > 1) || (f.parts && f.parts.length));
@@ -478,7 +478,8 @@ export function exportFaults(faults, opts = {}) {
     const strands = faultStrands(f, dem, bathy);
     if (!strands.length) return;
     const base = slug(f);
-    const title = f.name + (f.nameE ? ' / ' + f.nameE : '');
+    // file headers follow the interface language; the Shapefile table always carries both names
+    const title = lang === 'en' ? (f.nameE || f.name) : f.name + (f.nameE ? ' / ' + f.nameE : '');
     const mag = temMag ? String(temMag(f)) : '';
     if (want('obj')) files.push(['obj/' + base + '.obj', toOBJ(f, strands, title)]);
     if (want('xyz')) files.push(['xyz/' + base + '.xyz', toXYZ(f, strands, title)]);

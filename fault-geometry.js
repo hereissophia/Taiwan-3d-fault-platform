@@ -211,7 +211,7 @@ function buildDecollementSurfaces(THREE, lon0, lat0) {
 /** Trench axes (Slab2), draped on the seabed: each vertex takes its own bathymetric depth rather
  *  than one flat offset, so the line hugs the trough instead of floating over it. Labels are canvas
  *  sprites at the axis midpoint, flagged so the exaggeration slider lifts them with the surface. */
-function buildTrenches(THREE, lon0, lat0, bathy, lang) {
+export function buildTrenches(THREE, lon0, lat0, bathy, lang) {
   const group = new THREE.Group();
   group.name = 'Taiwan_trench';
   const color = 0xd9720f;

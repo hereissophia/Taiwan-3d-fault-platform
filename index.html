@@ -78,12 +78,13 @@
 
   <!-- HOME -->
   <div style="{{ homeDisplayStyle }}">
-    <div style="position:relative; width:100%; min-height:78vh; overflow:hidden; display:flex; align-items:center; justify-content:center">
+    <div style="position:relative; width:100%; min-height:clamp(380px, 54vh, 560px); overflow:hidden; display:flex; align-items:center; justify-content:center">
       <div ref="{{ heroParallaxRef }}" style="position:absolute; inset:-15% 0; z-index:0">
-        <img src="./uploads/images-2.jpeg" alt="Taiwan fault terrain" style="width:100%; height:100%; object-fit:cover"/>
+        <div style="width:100%; height:100%; background:linear-gradient(180deg, oklch(30% 0.05 245) 0%, oklch(36% 0.055 215) 30%, oklch(44% 0.055 175) 52%, oklch(68% 0.04 120) 70%, oklch(96% 0.01 95) 84%, oklch(96% 0.01 95) 100%)"></div>
       </div>
-      <div style="position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, oklch(20% 0.02 260 / 0.35), oklch(20% 0.02 260 / 0.75))"></div>
-      <div style="position:relative; z-index:2; max-width:960px; margin:0 auto; padding:72px 24px; text-align:center">
+      <div style="position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, oklch(20% 0.02 260 / 0.3) 0%, oklch(20% 0.02 260 / 0.18) 55%, oklch(20% 0.02 260 / 0) 80%)"></div>
+      <div style="position:absolute; left:0; right:0; bottom:0; height:32%; z-index:1; pointer-events:none; background:linear-gradient(180deg, oklch(96% 0.01 95 / 0) 0%, oklch(96% 0.01 95 / 0.6) 55%, oklch(96% 0.01 95) 100%)"></div>
+      <div style="position:relative; z-index:2; max-width:960px; margin:0 auto; padding:56px 24px 124px; text-align:center">
         <div style="font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(80% 0.1 55); font-weight:700; margin-bottom:16px">Taiwan Active Fault 3D Explorer</div>
         <h1 style="font-size:clamp(30px,5vw,52px); line-height:1.15; margin:0 0 20px; font-weight:900; color:white">{{ t.heroTitle }}</h1>
         <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px">
@@ -92,7 +93,7 @@
       </div>
     </div>
 
-    <div id="research" style="background:oklch(96% 0.01 95); border-top:1px solid oklch(92% 0.01 260); border-bottom:1px solid oklch(92% 0.01 260)">
+    <div id="research" style="background:oklch(96% 0.01 95); border-bottom:1px solid oklch(92% 0.01 260)">
       <div style="max-width:1080px; margin:0 auto; padding:56px 24px">
         <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(45% 0.13 55); font-weight:700; margin-bottom:24px">{{ t.sectionExplore }}</div>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px">
@@ -132,13 +133,7 @@
       </div>
     </div>
 
-    <div style="max-width:1080px; margin:0 auto; padding:48px 24px 80px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap">
-      <div>
-        <div style="font-size:18px; font-weight:700; margin-bottom:6px">{{ t.contactTitle }}</div>
-        <div style="font-size:14px; color:oklch(45% 0.02 260)">{{ t.contactDesc }}</div>
-      </div>
-      <a href="mailto:fault3d.lab@gmail.com" style="padding:12px 22px; border-radius:10px; background:oklch(20% 0.02 260); color:white; text-decoration:none; font-weight:700; font-size:14px">fault3d.lab@gmail.com</a>
-    </div>
+    <div style="height:48px"></div>
   </div>
 
   <!-- MAP PAGE -->
@@ -376,7 +371,7 @@
         </sc-if>
         <sc-if value="{{ showNumberLabels }}" hint-placeholder-val="{{ false }}">
           <sc-for list="{{ mapLabels }}" as="lb" hint-placeholder-count="10">
-            <div style="position:absolute; left:{{ lb.x }}px; top:{{ lb.y }}px; transform:translate(-50%,-50%); background:rgba(20,20,25,0.8); color:white; font-size:10px; font-weight:800; width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none">{{ lb.num }}</div>
+            <div style="position:absolute; left:{{ lb.x }}px; top:{{ lb.y }}px; transform:translate(-50%,-50%); background:{{ lb.badgeBg }}; color:white; font-size:9.5px; font-weight:800; letter-spacing:0.02em; height:17px; padding:0 5px; border-radius:999px; display:flex; align-items:center; justify-content:center; white-space:nowrap; font-family:'IBM Plex Mono',monospace; pointer-events:none">{{ lb.num }}</div>
           </sc-for>
         </sc-if>
         <sc-if value="{{ showNameLabels }}" hint-placeholder-val="{{ false }}">
@@ -398,6 +393,18 @@
                   <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgScaleBorder }}; background:{{ jpgScaleBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ jpgScaleMark }}</div>
                   <div style="font-size:14px; font-weight:600">{{ t.jpgScale }}</div>
                 </div>
+                <sc-if value="{{ jpgHasOffshore }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ toggleJpgOffshore }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+                    <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgOffshoreBorder }}; background:{{ jpgOffshoreBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ jpgOffshoreMark }}</div>
+                    <div style="font-size:14px; font-weight:600">{{ t.jpgOffshore }}</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ jpgHasTrench }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ toggleJpgTrench }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+                    <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgTrenchBorder }}; background:{{ jpgTrenchBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ jpgTrenchMark }}</div>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600"><span style="width:16px; height:3px; border-radius:2px; background:#d9720f; flex:none"></span>{{ t.jpgTrench }}</div>
+                  </div>
+                </sc-if>
                 <div onClick="{{ toggleJpgLegend }}" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
                   <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgLegendBorder }}; background:{{ jpgLegendBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px">{{ jpgLegendMark }}</div>
                   <div>
@@ -746,6 +753,8 @@ const STRINGS = {
     prototypeNote: '匯出為 zip：每個斷層一個檔案，附 attributes.csv。Z 值為海平面絕對高程。',
     photoTitle: '拍照模板預覽', photoSlot: '斷層面 3D 截圖', photoDownload: '下載照片（demo）',
     legendTitle: '斷層名稱對照',
+    legendLand: '陸上斷層', legendOffshore: '海域構造', legendTrench: '琉球海溝、馬尼拉海溝（USGS Slab 2.0）',
+    jpgOffshore: '海域構造', jpgTrench: '海溝與隱沒界面',
   },
   en: {
     siteTitle: 'Taiwan Active Fault 3D Database', navHome: 'Home', navMap: 'Map', navExport: 'Export list',
@@ -801,6 +810,8 @@ const STRINGS = {
     prototypeNote: 'Exports as a zip: one file per fault, plus attributes.csv. Z is absolute elevation above sea level.',
     photoTitle: 'Photo template preview', photoSlot: 'Fault plane 3D capture', photoDownload: 'Download photo (demo)',
     legendTitle: 'Fault name key',
+    legendLand: 'Onshore faults', legendOffshore: 'Offshore structures', legendTrench: 'Ryukyu & Manila trenches (USGS Slab 2.0)',
+    jpgOffshore: 'Offshore structures', jpgTrench: 'Trenches & interfaces',
   },
 };
 
@@ -941,6 +952,12 @@ class Component extends DCLogic {
     if (this._lastTypeColors !== this.state.typeColors) {
       this._lastTypeColors = this.state.typeColors;
       this.applyFaultColors();
+    }
+    // tracked on the instance like the other watchers here: prevState is not reliably supplied
+    if (this._lastLang === undefined) this._lastLang = this.state.lang;
+    if (this._lastLang !== this.state.lang) {
+      this._lastLang = this.state.lang;
+      this.rebuildTrenchLabels();
     }
     if (this._lastVertExag !== this.state.vertExag) {
       this._lastVertExag = this.state.vertExag;
@@ -1211,10 +1228,10 @@ class Component extends DCLogic {
   }
 
   slipCategory(f) {
-    // compound types (e.g. "SS/R") are classified by the LAST token: SS/R means reverse with a
-    // strike-slip component, so it counts as R. The offshore table writes strike-slip as RL
-    // (right-lateral) or LL (left-lateral), and hedges an uncertain component in parentheses
-    // ("R(LL?)") -- both collapse to the same three legend colours as the land faults.
+    // compound types are coloured by the LAST token, as specified by the data owner: SS/R is drawn
+    // as R, R/SS as SS. The text shown on the detail page keeps the table's own order untouched.
+    // The offshore table writes strike-slip as RL / LL and hedges an uncertain component in
+    // parentheses ("R(LL?)"); all collapse to the same three legend colours as the land faults.
     const parts = String(f.type || '').replace(/\([^)]*\)/g, '').split('/')
       .map((p) => p.trim().toUpperCase()).filter(Boolean);
     const t = parts.length ? parts[parts.length - 1] : '';
@@ -1322,6 +1339,37 @@ class Component extends DCLogic {
     apply(this._mapGroup);
   }
 
+  /** The trench labels are canvas textures baked in one language when the map is built; switching
+   *  中/EN swaps just that group for a freshly built one (and re-applies the exaggeration to it)
+   *  rather than rebuilding the whole map. */
+  rebuildTrenchLabels() {
+    const THREE = this._THREE;
+    if (!THREE || !this._mapGroup || !this._buildTrenches) return;
+    const old = this._mapGroup.children.find((o) => o.name === 'Taiwan_trench');
+    if (!old) return;
+    const bathy = this._bathy && this._bathy.loaded ? this._bathy : null;
+    const fresh = this._buildTrenches(THREE, 120.7, 23.7, bathy, this.state.lang);
+    fresh.visible = this.state.showTrench !== false;
+    const k = Number(this.state.vertExag) || 1;
+    fresh.traverse((o) => {
+      const pos = o.geometry && o.geometry.attributes && o.geometry.attributes.position;
+      if (pos) {
+        const snap = new Float32Array(pos.count);
+        for (let i = 0; i < pos.count; i++) { snap[i] = pos.getY(i); pos.setY(i, snap[i] * k); }
+        o.userData.baseY = snap;
+        pos.needsUpdate = true;
+        o.geometry.computeBoundingSphere();
+      }
+      if (o.isSprite) { o.userData.baseYPos = o.position.y; o.position.y *= k; }
+    });
+    this._mapGroup.remove(old);
+    old.traverse((o) => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); }
+    });
+    this._mapGroup.add(fresh);
+  }
+
   applyTrenchOverlay() {
     const show = this.state.showTrench !== false;
     if (!this._mapGroup) return;
@@ -1391,6 +1439,7 @@ class Component extends DCLogic {
     this._buildFaultGroup = geometry.buildFaultGroup;
     this._buildOffshoreFaultGroup = geometry.buildOffshoreFaultGroup;
     this._buildTaiwanMap = geometry.buildTaiwanMap;
+    this._buildTrenches = geometry.buildTrenches;
     this._setTopDownView = geometry.setTopDownView;
     this._fitFaultsToView = geometry.fitFaultsToView;
     this._lonLatToLocalMeters = geometry.lonLatToLocalMeters;
@@ -1462,7 +1511,10 @@ class Component extends DCLogic {
         const local = this._lonLatToLocalMeters(lon, lat, 120.7, 23.7);
         const y = this.faultAnchorY(f, lon, lat);
         const s = toScreen(new THREE.Vector3(local.x, y, local.z));
-        return { id: f.id, num: f.num, name: this.faultName(f), x: s.x, y: s.y };
+        // same L01 / O01 code as the fault list, so onshore 15 and offshore 15 never look alike
+        const code = (f.offshore ? 'O' : 'L') + String(f.num ?? '').padStart(2, '0');
+        return { id: f.id, num: code, offshore: !!f.offshore, name: this.faultName(f), x: s.x, y: s.y,
+          badgeBg: f.offshore ? 'oklch(42% 0.11 245 / 0.92)' : 'oklch(42% 0.11 55 / 0.92)' };
       }).filter(Boolean);
       this.setState({ mapLabels: this.declutterLabels(raw, this.state.labelMode) });
     } else if (this.state.mapLabels && this.state.mapLabels.length) {
@@ -1495,15 +1547,17 @@ class Component extends DCLogic {
     // Ordered by fault number, NOT by screen position: sorting by y meant that orbiting the camera
     // reordered the queue, so labels kept swapping slots with each other and the whole set shivered.
     // A camera-independent order makes each label's slot depend only on its neighbours' geometry.
-    const sorted = items.slice().sort((a, b) => (a.num - b.num) || String(a.id).localeCompare(String(b.id)));
+    // codes are now "L01" / "O15" / "O54A": order by the code string, which is still camera-independent
+    const sorted = items.slice().sort((a, b) => String(a.num).localeCompare(String(b.num), 'en', { numeric: true }) || String(a.id).localeCompare(String(b.id)));
     // Hysteresis: last frame's offset is tried first, so a label only moves when its current slot
     // has actually become occupied -- otherwise it holds still through small camera changes.
     if (!this._labelOffsets) this._labelOffsets = {};
     const prev = this._labelOffsets;
     const out = [];
     for (const it of sorted) {
-      const w = isNum ? 19 : this.measureLabelText(it.name) + 12;
-      const h = isNum ? 19 : 19;
+      // the pill is ~6px per character of the code plus padding
+      const w = isNum ? String(it.num).length * 6.2 + 10 : this.measureLabelText(it.name) + 12;
+      const h = isNum ? 17 : 19;
       let box = null, off = [0, 0];
       const tryList = prev[it.id] ? [prev[it.id], ...cands] : cands;
       for (const c of tryList) {
@@ -1520,6 +1574,7 @@ class Component extends DCLogic {
       out.push({
         // rounded to whole pixels: subpixel positions re-rendered every frame read as shimmer
         id: it.id, num: it.num, name: it.name, x: Math.round(box.cx), y: Math.round(box.cy),
+        offshore: it.offshore, badgeBg: it.badgeBg,
         ax: Math.round(it.x), ay: Math.round(it.y),
         leader: dist > 6,
         leaderX: Math.round(box.cx + ux * inset),
@@ -1528,7 +1583,7 @@ class Component extends DCLogic {
         leaderDeg: Math.atan2(-off[1], -off[0]) * 180 / Math.PI,
       });
     }
-    return out.sort((a, b) => a.num - b.num);
+    return out.sort((a, b) => String(a.num).localeCompare(String(b.num), 'en', { numeric: true }));
   }
 
   /** Compass + scale bar + true-depth ruler for the single-fault detail view. The ruler tracks
@@ -1680,6 +1735,8 @@ class Component extends DCLogic {
       jpgCompass: true,
       jpgScale: true,
       jpgLegend: this.state.labelMode === 'number',
+      jpgOffshore: true,
+      jpgTrench: this.state.showTrench !== false,
     });
   }
 
@@ -1687,6 +1744,20 @@ class Component extends DCLogic {
   async exportMapJpg() {
     const stage = this._mapStage, THREE = this._THREE;
     if (!stage || !stage._renderer || !stage._camera || !stage._scene) return;
+    // hide what the dialog left unticked for this one frame only, then restore the live view
+    const restore = [];
+    const hide = (o) => { if (o && o.visible) { o.visible = false; restore.push(o); } };
+    if (!this.state.jpgOffshore && this._mapFaultGroups) {
+      Object.entries(this._mapFaultGroups).forEach(([id, fg]) => {
+        const f = this.getFault(id);
+        if (f && f.offshore) hide(fg);
+      });
+    }
+    if (!this.state.jpgTrench && this._mapGroup) {
+      this._mapGroup.children.forEach((o) => {
+        if (o.name === 'Taiwan_trench' || o.name === 'Taiwan_slab_surface') hide(o);
+      });
+    }
     stage._renderer.render(stage._scene, stage._camera);
     const src = stage._renderer.domElement;
     const rect = stage.getBoundingClientRect();
@@ -1698,6 +1769,10 @@ class Component extends DCLogic {
     ctx.fillStyle = '#f3eee4';
     ctx.fillRect(0, 0, w, h);
     ctx.drawImage(src, 0, 0, w, h);
+    if (restore.length) {
+      restore.forEach((o) => { o.visible = true; });
+      stage._renderer.render(stage._scene, stage._camera);
+    }
 
     const roundRect = (x, y, rw, rh, r) => {
       ctx.beginPath();
@@ -1709,12 +1784,19 @@ class Component extends DCLogic {
       ctx.closePath();
     };
 
-    const opts = { compass: this.state.jpgCompass, scale: this.state.jpgScale, legend: this.state.jpgLegend };
+    const opts = { compass: this.state.jpgCompass, scale: this.state.jpgScale, legend: this.state.jpgLegend,
+      offshore: this.state.jpgOffshore, trench: this.state.jpgTrench };
     const T = STRINGS[this.state.lang] || STRINGS.zh;
+    // land and offshore numbering both start at 1, so offshore numbers are drawn in blue to tell
+    // "15" onshore from "15" offshore; unticked offshore structures lose their labels too
+    const labels = (this.state.mapLabels || []).filter((lb) => opts.offshore || !lb.offshore);
+    // canvas equivalents of the on-screen badge colours (oklch 42% 0.11 at hue 245 / 55)
+    const OFF_BLUE = 'rgba(22,86,140,0.92)';
+    const LAND_BROWN = 'rgba(128,68,12,0.92)';
 
     const mode = this.state.labelMode;
     if (mode !== 'none') {
-      (this.state.mapLabels || []).forEach((lb) => {
+      labels.forEach((lb) => {
         if (!lb.leader) return;
         ctx.strokeStyle = 'rgba(20,20,25,0.5)';
         ctx.lineWidth = Math.max(1, k);
@@ -1727,15 +1809,16 @@ class Component extends DCLogic {
         ctx.arc(lb.ax * k, lb.ay * k, 2 * k, 0, Math.PI * 2);
         ctx.fill();
       });
-      (this.state.mapLabels || []).forEach((lb) => {
+      labels.forEach((lb) => {
         const cx = lb.x * k, cy = lb.y * k;
-        ctx.fillStyle = 'rgba(20,20,25,0.8)';
+        ctx.fillStyle = lb.offshore ? OFF_BLUE : LAND_BROWN;
         if (mode === 'number') {
-          ctx.beginPath();
-          ctx.arc(cx, cy, 9.5 * k, 0, Math.PI * 2);
+          // same pill as on screen, sized to the L01 / O54A code
+          ctx.font = '800 ' + (9.5 * k) + 'px "IBM Plex Mono", monospace';
+          const bw = ctx.measureText(String(lb.num)).width + 10 * k, bh = 17 * k;
+          roundRect(cx - bw / 2, cy - bh / 2, bw, bh, bh / 2);
           ctx.fill();
           ctx.fillStyle = 'white';
-          ctx.font = '800 ' + (10 * k) + 'px "Noto Sans TC", sans-serif';
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText(String(lb.num), cx, cy + 0.5 * k);
         } else {
@@ -1752,7 +1835,16 @@ class Component extends DCLogic {
     }
 
     if (opts.legend) {
-      const entries = (this.state.mapLabels || []).slice().sort((a, b) => a.num - b.num);
+      // land first, then offshore, each in numeric order; a heading row opens each group and the
+      // trench gets a line-swatch row of its own at the end
+      const byNum = (a, b) => String(a.num).localeCompare(String(b.num), 'en', { numeric: true });
+      const land = labels.filter((e) => !e.offshore).sort(byNum);
+      const off = labels.filter((e) => e.offshore).sort(byNum);
+      const entries = [];
+      if (land.length && off.length) entries.push({ head: T.legendLand });
+      entries.push(...land);
+      if (off.length) { if (land.length) entries.push({ head: T.legendOffshore }); entries.push(...off); }
+      if (opts.trench && this.state.showTrench !== false) entries.push({ trench: true, num: '', name: T.legendTrench });
       if (entries.length) {
         const fs = 11 * k, lineH = 15 * k, pad = 10 * k, titleH = 16 * k;
         const rowsPerCol = Math.max(4, Math.floor((h * 0.62) / lineH));
@@ -1762,7 +1854,8 @@ class Component extends DCLogic {
         for (let c = 0; c < cols; c++) {
           let mw = 0;
           entries.slice(c * rowsPerCol, (c + 1) * rowsPerCol).forEach((e) => {
-            mw = Math.max(mw, ctx.measureText(e.num + '  ' + e.name).width);
+            const txt = e.head ? e.head : e.trench ? '\u2014\u2014  ' + e.name : e.num + '  ' + e.name;
+            mw = Math.max(mw, ctx.measureText(txt).width);
           });
           colWidths.push(mw);
         }
@@ -1782,7 +1875,22 @@ class Component extends DCLogic {
         for (let c = 0; c < cols; c++) {
           entries.slice(c * rowsPerCol, (c + 1) * rowsPerCol).forEach((e, i) => {
             const ty = ly + pad + titleH + i * lineH;
-            ctx.fillStyle = '#e0722f';
+            if (e.head) {
+              ctx.fillStyle = 'rgba(255,255,255,0.6)';
+              ctx.font = '700 ' + (10 * k) + 'px "Noto Sans TC", sans-serif';
+              ctx.fillText(e.head, cx0, ty + 1 * k);
+              ctx.font = '600 ' + fs + 'px "Noto Sans TC", sans-serif';
+              return;
+            }
+            if (e.trench) {
+              const sw = ctx.measureText('\u2014\u2014  ').width;
+              ctx.strokeStyle = '#e8912f'; ctx.lineWidth = 2.4 * k; ctx.lineCap = 'round';
+              ctx.beginPath(); ctx.moveTo(cx0 + 1 * k, ty + fs * 0.55); ctx.lineTo(cx0 + sw - 6 * k, ty + fs * 0.55); ctx.stroke();
+              ctx.fillStyle = 'white';
+              ctx.fillText(e.name, cx0 + sw, ty);
+              return;
+            }
+            ctx.fillStyle = e.offshore ? '#8fc0f0' : '#f0a05a';
             ctx.fillText(String(e.num), cx0, ty);
             ctx.fillStyle = 'white';
             ctx.fillText(e.name, cx0 + ctx.measureText(e.num + '  ').width, ty);
@@ -2019,6 +2127,7 @@ class Component extends DCLogic {
       const r = exportFaults(faults, {
         format: this.state.cartFormat || 'all',
         contourKm: this.state.contourKm ?? 2,
+        lang: this.state.lang,
         dem: this._dem,
         bathy: this._bathy,
         temMag: (f) => this.temMagnitude(f),
@@ -2145,7 +2254,8 @@ class Component extends DCLogic {
       return segs.map((s) => (s.horizKm != null ? L('平坦', 'flat') : s.dip + '\u00b0')).join(' / ');
     })();
     const statCells = currentFault.offshore ? [
-      { label: t.statSlip, value: this.faultSlip(currentFault) },
+      // the table's own code, in the table's own order (R, RL/R, R(LL?) ...), same as the land page
+      { label: t.statSlip, value: currentFault.type },
       { label: t.statLength, value: currentFault.lengthKm + ' km' },
       // measured DOWN FROM THE TRACE, i.e. from the seabed, which is how the offshore workbook
       // reports seismogenic depth -- not depth below sea level
@@ -2260,6 +2370,8 @@ class Component extends DCLogic {
         'Showing ' + exportPickList.length + ', selected ' + this.state.cart.length),
 
       researchCards, howtoSteps, refList,
+      // deployed without uploads/, the hero photo is absent: drop it and let the dark ground show
+      hideBrokenImg: (e) => { e.currentTarget.style.visibility = 'hidden'; },
       heroParallaxRef: (this.heroParallaxRef = this.heroParallaxRef || React.createRef()),
 
       searchQuery: this.state.searchQuery,
@@ -2317,12 +2429,12 @@ class Component extends DCLogic {
       closePointsHelp: () => this.setState({ pointsHelpOpen: false }),
       stopClick: (e) => e.stopPropagation(),
       pointsHelpCols: [
-        { key: 'lon / 經度', req: true, desc: L('必填。WGS84 十進位度，例 121.512', 'Required. WGS84 decimal degrees, e.g. 121.512') },
-        { key: 'lat / 緯度', req: true, desc: L('必填。WGS84 十進位度，例 23.874', 'Required. WGS84 decimal degrees, e.g. 23.874') },
-        { key: 'depth / 深度', req: true, desc: L('必填。單位公里，正數代表地表以下', 'Required. Kilometres, positive = below the surface') },
-        { key: 'mag / 規模', req: false, desc: L('選填。地震規模，可接受 ML、Mw 等欄名', 'Optional. Magnitude; ML, Mw etc. are also recognised') },
-        { key: 'group / 分組', req: false, desc: L('選填。含「主震 / main」者為紅點，其他字串為餘震藍點，空白為紫點', 'Optional. Values containing main are red, other text is a blue aftershock, blank is purple') },
-        { key: 'time / 時間', req: false, desc: L('選填。發生時間，原樣保留', 'Optional. Origin time, kept as given') },
+        { key: L('lon / 經度', 'lon'), req: true, desc: L('必填。WGS84 十進位度，例 121.512', 'Required. WGS84 decimal degrees, e.g. 121.512') },
+        { key: L('lat / 緯度', 'lat'), req: true, desc: L('必填。WGS84 十進位度，例 23.874', 'Required. WGS84 decimal degrees, e.g. 23.874') },
+        { key: L('depth / 深度', 'depth'), req: true, desc: L('必填。單位公里，正數代表地表以下', 'Required. Kilometres, positive = below the surface') },
+        { key: L('mag / 規模', 'mag'), req: false, desc: L('選填。地震規模，可接受 ML、Mw 等欄名', 'Optional. Magnitude; ML, Mw etc. are also recognised') },
+        { key: L('group / 分組', 'group'), req: false, desc: L('選填。含「主震 / main」者為紅點，其他字串為餘震藍點，空白為紫點', 'Optional. Values containing main are red, other text is a blue aftershock, blank is purple') },
+        { key: L('time / 時間', 'time'), req: false, desc: L('選填。發生時間，原樣保留', 'Optional. Origin time, kept as given') },
       ].map((c) => ({ ...c, keyColor: c.req ? 'oklch(45% 0.13 55)' : 'oklch(45% 0.02 260)' })),
       pointsHelpExample: 'lon,lat,depth,mag,group,time\n121.512,23.874,12.4,5.8,main,2024-04-03 07:58\n121.498,23.901,15.1,4.2,after,2024-04-03 08:11\n121.530,23.860,9.7,3.6,after,2024-04-03 09:02',
       showExagNotice: !!this.state.sectionOpen && (this.state.sectionVExag || 1) !== 1
@@ -2459,6 +2571,17 @@ class Component extends DCLogic {
       toggleJpgCompass: () => this.setState(s => ({ jpgCompass: !s.jpgCompass })),
       toggleJpgScale: () => this.setState(s => ({ jpgScale: !s.jpgScale })),
       toggleJpgLegend: () => this.setState(s => ({ jpgLegend: !s.jpgLegend })),
+      // offshore row only when this domain shows any; trench row only when the layer is on
+      jpgHasOffshore: this.state.domain !== 'land',
+      jpgHasTrench: this.state.showTrench !== false,
+      toggleJpgOffshore: () => this.setState(s => ({ jpgOffshore: !s.jpgOffshore })),
+      toggleJpgTrench: () => this.setState(s => ({ jpgTrench: !s.jpgTrench })),
+      jpgOffshoreMark: this.state.jpgOffshore ? '\u2713' : '',
+      jpgTrenchMark: this.state.jpgTrench ? '\u2713' : '',
+      jpgOffshoreBg: this.state.jpgOffshore ? accent : 'white',
+      jpgTrenchBg: this.state.jpgTrench ? accent : 'white',
+      jpgOffshoreBorder: this.state.jpgOffshore ? accent : 'oklch(80% 0.01 260)',
+      jpgTrenchBorder: this.state.jpgTrench ? accent : 'oklch(80% 0.01 260)',
       jpgCompassMark: this.state.jpgCompass ? '\u2713' : '',
       jpgScaleMark: this.state.jpgScale ? '\u2713' : '',
       jpgLegendMark: this.state.jpgLegend ? '\u2713' : '',

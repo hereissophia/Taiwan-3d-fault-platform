@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<template id="__bundler_thumbnail" data-bg-color="#1c2230">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#1c2230"/>
+    <path d="M20 70 L40 45 L55 60 L80 30" stroke="#e0722f" stroke-width="4" fill="none"/>
+    <text x="50" y="88" font-size="10" fill="#f2c94c" text-anchor="middle" font-family="sans-serif">斷層</text>
+  </svg>
+</template>
+<helmet>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap');
+    body { margin: 0; font-family: 'Noto Sans TC', 'Inter', sans-serif; background: oklch(98% 0.005 95); }
+    a { color: oklch(45% 0.13 55); }
+    a:hover { color: oklch(38% 0.13 55); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: oklch(85% 0.01 260); border-radius: 4px; }
+    input[type=range] { accent-color: #e0722f; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+      "three/addons/controls/OrbitControls.js": "https://unpkg.com/three@0.184.0/examples/jsm/controls/OrbitControls.js",
+      "three/addons/exporters/OBJExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/OBJExporter.js",
+      "three/addons/exporters/GLTFExporter.js": "https://unpkg.com/three@0.184.0/examples/jsm/exporters/GLTFExporter.js"
+    }
+  }
+  </script>
+  <script src="./three-d-stage.js"></script>
+  <script src="./image-slot.js"></script>
+  <script type="module" src="./faults-data.js"></script>
+  <script type="module" src="./dem.js"></script>
+  <script type="module" src="./bathy.js"></script>
+  <script type="module" src="./offshore-faults.js"></script>
+  <script type="module" src="./fault-export.js"></script>
+  <script type="module" src="./point-data.js"></script>
+  <script type="module" src="./cross-section.js"></script>
+  <script type="module" src="./fault-geometry.js"></script>
+  <script type="module" src="./county-boundary-edges.js"></script>
+  <script type="module" src="./land-mask.js"></script>
+  <script type="module" src="./coastline-data.js"></script>
+</helmet>
+
+<div style="min-height:100vh; display:flex; flex-direction:column; color:oklch(22% 0.02 260)">
+
+  <!-- NAV -->
+  <nav style="position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 24px; background:oklch(20% 0.02 260); color:white">
+    <div style="display:flex; align-items:center; gap:10px; cursor:pointer; min-width:0" onClick="{{ goHome }}">
+      <div style="width:30px; height:30px; border-radius:6px; background:oklch(68% 0.16 55); flex:none"></div>
+      <div style="font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">{{ t.siteTitle }}</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:6px">
+      <sc-if value="{{ !isMobile }}" hint-placeholder-val="{{ true }}">
+        <div onClick="{{ goHome }}" style="padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; opacity:{{ navHomeOpacity }}; background:{{ navHomeBg }}" style-hover="opacity:1; background:rgba(255,255,255,0.16)">{{ t.navHome }}</div>
+        <div onClick="{{ goMap }}" style="padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; opacity:{{ navMapOpacity }}; background:{{ navMapBg }}" style-hover="opacity:1; background:rgba(255,255,255,0.16)">{{ t.navMap }}</div>
+      </sc-if>
+      <div onClick="{{ goExport }}" style="position:relative; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:14px; opacity:{{ navExportOpacity }}; background:{{ navExportBg }}; display:flex; align-items:center; gap:6px" style-hover="opacity:1; background:rgba(255,255,255,0.16)">
+        <span>{{ t.navExport }}</span>
+        <sc-if value="{{ cartCountLabel }}" hint-placeholder-val="{{ false }}">
+          <span style="min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center">{{ cartCountLabel }}</span>
+        </sc-if>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; margin-left:10px; font-size:13px; font-weight:700; letter-spacing:0.02em">
+        <span onClick="{{ setLangEn }}" style="cursor:pointer; color:{{ langEnColor }}">EN</span>
+        <span style="color:rgba(255,255,255,0.3); font-weight:400">/</span>
+        <span onClick="{{ setLangZh }}" style="cursor:pointer; color:{{ langZhColor }}">TW</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div style="{{ homeDisplayStyle }}">
+    <div style="position:relative; width:100%; min-height:78vh; overflow:hidden; display:flex; align-items:center; justify-content:center">
+      <div ref="{{ heroParallaxRef }}" style="position:absolute; inset:-15% 0; z-index:0">
+        <img src="./uploads/images-2.jpeg" alt="Taiwan fault terrain" style="width:100%; height:100%; object-fit:cover"/>
+      </div>
+      <div style="position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, oklch(20% 0.02 260 / 0.35), oklch(20% 0.02 260 / 0.75))"></div>
+      <div style="position:relative; z-index:2; max-width:960px; margin:0 auto; padding:72px 24px; text-align:center">
+        <div style="font-size:13px; letter-spacing:0.12em; text-transform:uppercase; color:oklch(80% 0.1 55); font-weight:700; margin-bottom:16px">Taiwan Active Fault 3D Explorer</div>
+        <h1 style="font-size:clamp(30px,5vw,52px); line-height:1.15; margin:0 0 20px; font-weight:900; color:white">{{ t.heroTitle }}</h1>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px">
+          <button onClick="{{ goMap }}" style="padding:14px 28px; border:none; border-radius:10px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:16px; font-weight:700; cursor:pointer" style-hover="background:oklch(72% 0.16 55)">{{ t.heroCta }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="research" style="background:oklch(96% 0.01 95); border-top:1px solid oklch(92% 0.01 260); border-bottom:1px solid oklch(92% 0.01 260)">
+      <div style="max-width:1080px; margin:0 auto; padding:56px 24px">
+        <div style="font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(45% 0.13 55); font-weight:700; margin-bottom:24px">{{ t.sectionExplore }}</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px">
+          <sc-for list="{{ researchCards }}" as="rc" hint-placeholder-count="3">
+            <div style="padding:20px; background:white; border-radius:12px; border:1px solid oklch(92% 0.01 260)">
+              <div style="font-size:15px; font-weight:700; margin-bottom:8px">{{ rc.title }}</div>
+              <div style="font-size:14px; line-height:1.6; color:oklch(45% 0.02 260)">{{ rc.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:40px; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(45% 0.13 55); font-weight:700; margin-bottom:20px">{{ t.sectionHowto }}</div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px">
+          <sc-for list="{{ howtoSteps }}" as="hs" hint-placeholder-count="2">
+            <div style="padding:20px; background:white; border-radius:12px; border:1px solid oklch(92% 0.01 260); display:flex; gap:14px">
+              <div style="flex:none; width:28px; height:28px; border-radius:50%; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center">{{ hs.n }}</div>
+              <div>
+                <div style="font-size:15px; font-weight:700; margin-bottom:6px">{{ hs.title }}</div>
+                <div style="font-size:14px; line-height:1.6; color:oklch(45% 0.02 260)">{{ hs.desc }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:40px; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color:oklch(45% 0.13 55); font-weight:700; margin-bottom:16px">{{ t.sectionRefs }}</div>
+        <div style="display:flex; flex-direction:column; gap:1px; background:oklch(92% 0.01 260); border:1px solid oklch(92% 0.01 260); border-radius:12px; overflow:hidden">
+          <sc-for list="{{ refList }}" as="rf" hint-placeholder-count="5">
+            <div style="display:grid; grid-template-columns:28px minmax(0,1fr); gap:12px; padding:14px 18px; background:white">
+              <div style="font-size:13px; font-weight:800; color:oklch(45% 0.13 55); font-family:'IBM Plex Mono',monospace">{{ rf.n }}</div>
+              <div style="min-width:0">
+                <div style="font-size:14px; line-height:1.55; color:oklch(28% 0.02 260); text-wrap:pretty">{{ rf.title }}</div>
+                <div style="font-size:12.5px; line-height:1.5; color:oklch(50% 0.02 260); margin-top:3px">{{ rf.cite }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="max-width:1080px; margin:0 auto; padding:48px 24px 80px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap">
+      <div>
+        <div style="font-size:18px; font-weight:700; margin-bottom:6px">{{ t.contactTitle }}</div>
+        <div style="font-size:14px; color:oklch(45% 0.02 260)">{{ t.contactDesc }}</div>
+      </div>
+      <a href="mailto:fault3d.lab@gmail.com" style="padding:12px 22px; border-radius:10px; background:oklch(20% 0.02 260); color:white; text-decoration:none; font-weight:700; font-size:14px">fault3d.lab@gmail.com</a>
+    </div>
+  </div>
+
+  <!-- MAP PAGE -->
+  <div style="{{ mapDisplayStyle }}">
+    <div style="display:flex; flex-direction:{{ mapFlexDirection }}; height:{{ mapAreaHeight }}">
+      <div style="width:{{ sidebarWidth }}; flex:none; border-right:1px solid oklch(92% 0.01 260); background:white; display:{{ sidebarDisplay }}; flex-direction:column; max-height:{{ sidebarMaxHeight }}">
+
+        <div style="display:flex; border-bottom:1px solid oklch(90% 0.01 260)">
+          <div onClick="{{ setSideView }}" style="flex:1; text-align:center; padding:14px 6px; font-size:13px; font-weight:800; cursor:pointer; color:{{ sideViewColor }}; border-bottom:2px solid {{ sideViewUnderline }}">{{ t.sideView }}</div>
+          <div onClick="{{ setSideEdit }}" style="flex:1; text-align:center; padding:14px 6px; font-size:13px; font-weight:800; cursor:pointer; color:{{ sideEditColor }}; border-bottom:2px solid {{ sideEditUnderline }}">{{ t.sideEdit }}</div>
+          <div onClick="{{ setSideAdd }}" style="flex:1; text-align:center; padding:14px 6px; font-size:13px; font-weight:800; cursor:pointer; color:{{ sideAddColor }}; border-bottom:2px solid {{ sideAddUnderline }}">{{ t.sideAdd }}</div>
+        </div>
+
+        <!-- VIEW PANE: search + list -->
+        <div style="{{ viewPaneStyle }}; flex-direction:column; flex:none">
+          <div style="padding:14px 16px 0">
+            <input value="{{ searchQuery }}" onChange="{{ onSearchChange }}" placeholder="{{ t.searchPh }}" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:8px; border:1px solid oklch(85% 0.01 260); font-size:14px" />
+          </div>
+        </div>
+
+        <!-- ADD PANE -->
+        <div style="{{ addPaneStyle }}; flex-direction:column; flex:1; min-height:0; overflow-y:auto">
+
+          <div style="padding:12px 16px; border-bottom:1px solid oklch(93% 0.01 260)">
+            <div style="font-size:11px; font-weight:800; color:oklch(50% 0.02 260); letter-spacing:0.04em">{{ t.coordSearch }}</div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px">
+              <div style="font-size:10.5px; color:oklch(58% 0.02 260)">{{ t.coordRadiusLabel }}</div>
+              <div style="font-size:11px; font-weight:700; color:oklch(45% 0.13 55); font-family:'IBM Plex Mono',monospace">{{ markerRadiusLabel }}</div>
+            </div>
+            <input type="range" min="100" max="5000" step="100" value="{{ markerRadius }}" onChange="{{ onMarkerRadius }}" style="width:100%; margin-bottom:8px" />
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px">
+              <input value="{{ qLon }}" onChange="{{ onQLon }}" placeholder="{{ t.lonPh }}" style="width:100%; box-sizing:border-box; padding:8px 8px; border-radius:7px; border:1px solid oklch(87% 0.01 260); font-size:12px; font-family:'IBM Plex Mono',monospace" />
+              <input value="{{ qLat }}" onChange="{{ onQLat }}" placeholder="{{ t.latPh }}" style="width:100%; box-sizing:border-box; padding:8px 8px; border-radius:7px; border:1px solid oklch(87% 0.01 260); font-size:12px; font-family:'IBM Plex Mono',monospace" />
+              <input value="{{ qDepth }}" onChange="{{ onQDepth }}" placeholder="{{ t.depthPh }}" style="width:100%; box-sizing:border-box; padding:8px 8px; border-radius:7px; border:1px solid oklch(87% 0.01 260); font-size:12px; font-family:'IBM Plex Mono',monospace" />
+            </div>
+            <div style="display:flex; gap:6px; margin-top:8px">
+              <button onClick="{{ locateQueryPoint }}" style="flex:1; padding:9px; border:none; border-radius:8px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:12.5px; font-weight:800; cursor:pointer">{{ t.locateBtn }}</button>
+              <button onClick="{{ clearQueryPoint }}" style="padding:9px 12px; border-radius:8px; border:1px solid oklch(88% 0.01 260); background:white; font-size:12.5px; font-weight:700; cursor:pointer">{{ t.clearBtn }}</button>
+            </div>
+            <sc-for list="{{ queryPointItems }}" as="qi" hint-placeholder-count="0">
+              <div style="margin-top:8px; padding:6px 10px; border-radius:7px; border:1.5px solid {{ qi.color }}; background:white; font-size:11.5px; font-weight:700; color:{{ qi.color }}; font-family:'IBM Plex Mono',monospace">{{ qi.text }}</div>
+            </sc-for>
+          </div>
+
+          <div style="padding:12px 16px; border-bottom:1px solid oklch(93% 0.01 260)">
+            <div style="display:flex; align-items:center; gap:6px">
+              <div style="font-size:11px; font-weight:800; color:oklch(50% 0.02 260); letter-spacing:0.04em">{{ t.pointsLabel }}</div>
+              <div onClick="{{ openPointsHelp }}" title="{{ t.pointsHelpTitle }}" style="flex-shrink:0; width:13px; height:13px; border-radius:999px; border:1px solid oklch(72% 0.03 260); color:oklch(45% 0.03 260); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:800; font-family:Georgia,'Times New Roman',serif; line-height:1; cursor:pointer; user-select:none" style-hover="background:oklch(94% 0.02 260); border-color:oklch(55% 0.05 260)">i</div>
+            </div>
+            <div style="height:8px"></div>
+            <label style="display:block; padding:12px; border:1.5px dashed oklch(82% 0.02 260); border-radius:9px; text-align:center; cursor:pointer; font-size:12px; font-weight:700; color:oklch(45% 0.13 55)" style-hover="background:oklch(97% 0.01 95)">
+              {{ t.pointsPick }}
+              <input type="file" accept=".csv,.xlsx,.txt" multiple="{{ true }}" onChange="{{ onPointFiles }}" style="display:none" />
+            </label>
+            <sc-if value="{{ hasPoints }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px">
+                <div style="font-size:11.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:oklch(35% 0.02 260)">{{ pointsSummary }}</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:11px; color:oklch(45% 0.02 260)">
+                  <span style="display:flex; align-items:center; gap:5px"><span style="width:9px; height:9px; border-radius:50%; background:#d93025"></span>{{ t.groupMain }}</span>
+                  <span style="display:flex; align-items:center; gap:5px"><span style="width:9px; height:9px; border-radius:50%; background:#1f5fbf"></span>{{ t.groupAfter }}</span>
+                  <span style="display:flex; align-items:center; gap:5px"><span style="width:9px; height:9px; border-radius:50%; background:#6d4bb8"></span>{{ t.groupNone }}</span>
+                </div>
+                <button onClick="{{ clearPoints }}" style="padding:7px; border-radius:8px; border:1px solid oklch(88% 0.01 260); background:white; font-size:12px; font-weight:700; cursor:pointer">{{ t.pointsClear }}</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="padding:12px 16px; border-bottom:1px solid oklch(93% 0.01 260)">
+            <div style="font-size:11px; font-weight:800; color:oklch(50% 0.02 260); letter-spacing:0.04em">{{ t.sectionLabel }}</div>
+            <div style="font-size:10.5px; color:oklch(58% 0.02 260); margin-bottom:8px">{{ sectionStatusText }}</div>
+            <button onClick="{{ toggleSectionPick }}" style="width:100%; padding:9px; border:none; border-radius:8px; background:{{ sectionPickBg }}; color:{{ sectionPickColor }}; font-size:12.5px; font-weight:800; cursor:pointer">{{ sectionPickLabel }}</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px">
+              <input value="{{ secA }}" onChange="{{ onSecA }}" placeholder="{{ t.secAPh }}" style="width:100%; box-sizing:border-box; padding:8px; border-radius:7px; border:1px solid oklch(87% 0.01 260); font-size:11.5px; font-family:'IBM Plex Mono',monospace" />
+              <input value="{{ secB }}" onChange="{{ onSecB }}" placeholder="{{ t.secBPh }}" style="width:100%; box-sizing:border-box; padding:8px; border-radius:7px; border:1px solid oklch(87% 0.01 260); font-size:11.5px; font-family:'IBM Plex Mono',monospace" />
+            </div>
+            <div style="display:flex; gap:6px; margin-top:12px">
+              <button onClick="{{ drawSection }}" style="flex:1; padding:9px; border:none; border-radius:8px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:12.5px; font-weight:800; cursor:pointer">{{ t.sectionDraw }}</button>
+              <button onClick="{{ clearSection }}" style="padding:9px 12px; border-radius:8px; border:1px solid oklch(88% 0.01 260); background:white; font-size:12.5px; font-weight:700; cursor:pointer">{{ t.clearBtn }}</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- VIEW PANE: domain + tabs + list -->
+        <div style="{{ viewPaneStyle }}; flex-direction:column; flex:1; min-height:0">
+          <div style="padding:12px 16px 0">
+            <div style="font-size:11px; font-weight:800; color:oklch(50% 0.02 260); letter-spacing:0.04em; margin-bottom:6px">{{ t.domainLabel }}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; padding:3px; background:oklch(95% 0.01 260); border-radius:9px">
+              <div onClick="{{ setDomainLand }}" title="{{ t.domainLand }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; border-radius:7px; cursor:pointer; background:{{ domainLandBg }}; color:{{ domainLandColor }}; box-shadow:{{ domainLandShadow }}">
+                <svg width="20" height="13" viewBox="0 0 20 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M1 11h18M4 11l4.5-6.5L11.5 9l2.5-3.5L18 11"/></svg>
+                <span style="font-size:10.5px; font-weight:800">{{ t.domainLand }}</span>
+              </div>
+              <div onClick="{{ setDomainAll }}" title="{{ t.domainAll }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; border-radius:7px; cursor:pointer; background:{{ domainAllBg }}; color:{{ domainAllColor }}; box-shadow:{{ domainAllShadow }}">
+                <svg width="20" height="13" viewBox="0 0 20 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M3 7l3.5-5L9.5 6l2-2.5L15 7"/><path d="M1 10.5c1.6 0 1.6-1.6 3.2-1.6s1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6 1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6"/></svg>
+                <span style="font-size:10.5px; font-weight:800">{{ t.domainAll }}</span>
+              </div>
+              <div onClick="{{ setDomainSea }}" title="{{ t.domainSea }}" style="display:flex; flex-direction:column; align-items:center; gap:3px; padding:7px 2px; border-radius:7px; cursor:pointer; background:{{ domainSeaBg }}; color:{{ domainSeaColor }}; box-shadow:{{ domainSeaShadow }}">
+                <svg width="20" height="13" viewBox="0 0 20 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 4.5c1.6 0 1.6-1.6 3.2-1.6S5.8 4.5 7.4 4.5 9 2.9 10.6 2.9s1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6"/><path d="M1 8.2c1.6 0 1.6-1.6 3.2-1.6S5.8 8.2 7.4 8.2 9 6.6 10.6 6.6s1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6"/><path d="M1 11.9c1.6 0 1.6-1.6 3.2-1.6s1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6 1.6 1.6 3.2 1.6 1.6-1.6 3.2-1.6"/></svg>
+                <span style="font-size:10.5px; font-weight:800">{{ t.domainSea }}</span>
+              </div>
+            </div>
+            <div style="font-size:10.5px; color:oklch(58% 0.02 260); margin-top:6px">{{ domainCountLabel }}</div>
+          </div>
+
+          <div style="display:flex; gap:6px; padding:12px 16px 0; border-bottom:1px solid oklch(90% 0.01 260)">
+            <div onClick="{{ setTabAll }}" style="flex:1; text-align:center; padding:8px 4px; color:{{ tabAllColor }}; font-size:12px; font-weight:700; cursor:pointer; border-bottom:2px solid {{ tabAllUnderline }}">{{ t.tabAll }}</div>
+            <div onClick="{{ setTabLocal }}" style="flex:1; text-align:center; padding:8px 4px; color:{{ tabLocalColor }}; font-size:12px; font-weight:700; cursor:pointer; border-bottom:2px solid {{ tabLocalUnderline }}">{{ t.tabLocal }}</div>
+          </div>
+          <div style="display:flex; gap:6px; padding:10px 16px 12px; font-size:11px; color:oklch(50% 0.02 260); align-items:center">
+            <span style="flex:none">{{ t.mapLabelLabel }}</span>
+            <div onClick="{{ setLabelNumber }}" style="flex:1; text-align:center; padding:5px 4px; border-radius:6px; border:1px solid {{ labelNumBorder }}; background:{{ labelNumBg }}; color:{{ labelNumColor }}; cursor:pointer">{{ t.labelNumber }}</div>
+            <div onClick="{{ setLabelName }}" style="flex:1; text-align:center; padding:5px 4px; border-radius:6px; border:1px solid {{ labelNameBorder }}; background:{{ labelNameBg }}; color:{{ labelNameColor }}; cursor:pointer">{{ t.labelName }}</div>
+            <div onClick="{{ setLabelNone }}" style="flex:1; text-align:center; padding:5px 4px; border-radius:6px; border:1px solid {{ labelNoneBorder }}; background:{{ labelNoneBg }}; color:{{ labelNoneColor }}; cursor:pointer">{{ t.labelNone }}</div>
+          </div>
+          <div style="overflow-y:auto; flex:1">
+            <sc-for list="{{ filteredFaults }}" as="f" hint-placeholder-count="4">
+              <div style="padding:14px 16px; border-bottom:1px solid oklch(94% 0.01 260); cursor:pointer; background:{{ f.rowBg }}" onClick="{{ f.onSelect }}" style-hover="background:oklch(96% 0.01 95)">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+                  <div style="display:flex; align-items:baseline; gap:6px; min-width:0">
+                    <span style="flex:none; font-size:11px; font-weight:800; color:oklch(55% 0.02 260); font-family:'IBM Plex Mono', monospace">{{ f.seq }}</span>
+                    <div style="font-size:14px; font-weight:700">{{ f.name }}</div>
+                  </div>
+                  <sc-if value="{{ f.showCheckbox }}" hint-placeholder-val="{{ false }}">
+                    <label onClick="{{ f.stopClick }}" style="flex:none; padding:10px; margin:-10px; display:flex; align-items:center; cursor:pointer">
+                      <input type="checkbox" checked="{{ f.checkboxChecked }}" onChange="{{ f.checkboxOnChange }}" style="width:18px; height:18px; flex:none; accent-color:{{ f.checkboxColor }}; pointer-events:none" />
+                    </label>
+                  </sc-if>
+                </div>
+                <div style="font-size:12px; color:oklch(45% 0.02 260); margin-top:4px">{{ f.slipType }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- EDIT PANE -->
+        <div style="{{ editPaneStyle }}; flex-direction:column; flex:1; min-height:0; overflow-y:auto">
+          <div style="padding:18px 16px; display:flex; flex-direction:column; gap:22px">
+            <div style="padding:12px; border:1px solid oklch(90% 0.01 260); border-radius:10px">
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer">
+                <input type="checkbox" checked="{{ showTrench }}" onChange="{{ onShowTrench }}" style="width:17px; height:17px; flex:none; accent-color:#d9720f" />
+                <span style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700">
+                  <span style="width:16px; height:3px; border-radius:2px; background:#d9720f; flex:none"></span>{{ t.trenchLabel }}
+                </span>
+              </label>
+              <div style="font-size:11px; color:oklch(52% 0.02 260); line-height:1.5; margin-top:7px">{{ t.trenchHint }}</div>
+              <div style="font-size:10.5px; color:oklch(58% 0.02 260); margin-top:5px; font-family:'IBM Plex Mono',monospace">{{ t.trenchRef }}</div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px">
+                <div style="font-size:12.5px; font-weight:800">{{ t.vertExagLabel }}</div>
+                <div style="font-size:12px; font-weight:700; color:oklch(45% 0.13 55); font-family:'IBM Plex Mono',monospace">{{ vertExagLabel }}</div>
+              </div>
+              <input type="range" min="1" max="8" step="0.5" value="{{ vertExag }}" onChange="{{ onVertExag }}" style="width:100%" />
+              <div style="font-size:11px; color:oklch(52% 0.02 260); line-height:1.5; margin-top:6px">{{ t.vertExagHint }}</div>
+            </div>
+
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px">
+                <div style="font-size:12.5px; font-weight:800">{{ t.terrainOpacityLabel }}</div>
+                <div style="font-size:12px; font-weight:700; color:oklch(45% 0.13 55); font-family:'IBM Plex Mono',monospace">{{ terrainOpacityLabel }}</div>
+              </div>
+              <input type="range" min="0.1" max="1" step="0.05" value="{{ terrainOpacity }}" onChange="{{ onTerrainOpacity }}" style="width:100%" />
+              <div style="font-size:11px; color:oklch(52% 0.02 260); line-height:1.5; margin-top:6px">{{ t.terrainOpacityHint }}</div>
+            </div>
+
+            <div onClick="{{ toggleTypeColors }}" style="display:flex; align-items:flex-start; gap:10px; padding:12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+              <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ typeColorsBorder }}; background:{{ typeColorsBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px">{{ typeColorsMark }}</div>
+              <div>
+                <div style="font-size:13px; font-weight:700">{{ t.typeColorsLabel }}</div>
+                <div style="display:flex; flex-direction:column; gap:5px; margin-top:8px">
+                  <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:oklch(45% 0.02 260)">
+                    <span style="width:14px; height:6px; border-radius:2px; background:#d93025; flex:none"></span>{{ t.legendReverse }}
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:oklch(45% 0.02 260)">
+                    <span style="width:14px; height:6px; border-radius:2px; background:#1e9e4a; flex:none"></span>{{ t.legendNormal }}
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:oklch(45% 0.02 260)">
+                    <span style="width:14px; height:6px; border-radius:2px; background:#8b5a2b; flex:none"></span>{{ t.legendStrikeSlip }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding:12px; border:1px solid oklch(90% 0.01 260); border-radius:10px">
+              <div style="font-size:13px; font-weight:700; margin-bottom:8px">{{ t.lineSourceLabel }}</div>
+              <div style="display:flex; gap:8px">
+                <div onClick="{{ selectCoastline }}" style="flex:1; text-align:center; padding:8px 0; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; border:1px solid {{ coastlineBorder }}; background:{{ coastlineBg }}; color:{{ coastlineText }}">{{ t.lineSourceCoastline }}</div>
+                <div onClick="{{ selectCounty }}" style="flex:1; text-align:center; padding:8px 0; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; border:1px solid {{ countyBorder }}; background:{{ countyBg }}; color:{{ countyText }}">{{ t.lineSourceCounty }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:1; position:relative; overflow:hidden; min-height:{{ mapMinHeight }}; background:#f3eee4">
+        <three-d-stage id="fault-map-3d-stage" name="taiwan-fault-map" background="#f3eee4" hide-note hide-toolbar style="position:absolute; inset:0; width:100%; height:100%"></three-d-stage>
+        <div onClick="{{ toggleSidebar }}" title="{{ sidebarToggleLabel }}" style="position:absolute; left:0; top:50%; transform:translateY(-50%); width:22px; height:64px; z-index:4; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.15s" style-hover="opacity:1">
+          <div style="width:0; height:0; border-top:8px solid transparent; border-bottom:8px solid transparent; border-{{ sidebarArrowSide }}:9px solid rgba(255,255,255,0.85)"></div>
+        </div>
+        <div style="position:absolute; top:16px; left:16px; display:flex; gap:8px; z-index:3">
+          <div onClick="{{ exportMapJpg }}" style="padding:8px 12px; border-radius:8px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:12px; font-weight:700; cursor:pointer" style-hover="background:oklch(74% 0.16 55)">{{ t.exportJpgBtn }}</div>
+        </div>
+
+        <div style="position:absolute; top:16px; right:16px; width:58px; height:58px; filter:drop-shadow(0 1px 3px rgba(20,30,50,0.28))">
+          <div style="width:100%; height:100%; transform:rotate({{ compassDeg }}deg)">
+            <svg width="100%" height="100%" viewBox="0 0 64 64" style="display:block; overflow:visible">
+              <circle cx="32" cy="32" r="30" fill="rgba(255,255,255,0.8)" stroke="#1b3a6b" stroke-opacity="0.45" stroke-width="1"></circle>
+              <circle cx="32" cy="32" r="23.5" fill="none" stroke="#1b3a6b" stroke-opacity="0.22" stroke-width="0.75"></circle>
+              <path d="M45 9.48L46.5 6.89M54.52 19L57.11 17.5M54.52 45L57.11 46.5M45 54.52L46.5 57.11M19 54.52L17.5 57.11M9.48 45L6.89 46.5M9.48 19L6.89 17.5M19 9.48L17.5 6.89" stroke="#1b3a6b" stroke-opacity="0.5" stroke-width="0.9" stroke-linecap="round"></path>
+              <path d="M57 32H61M32 57V61M7 32H3" stroke="#1b3a6b" stroke-opacity="0.75" stroke-width="1.4" stroke-linecap="round"></path>
+              <path d="M32 16L37 32H32Z" fill="#1b3a6b"></path>
+              <path d="M32 16L27 32H32Z" fill="#3d6aa8"></path>
+              <path d="M32 48L37 32H32Z" fill="#c9d1dc"></path>
+              <path d="M32 48L27 32H32Z" fill="#ffffff"></path>
+              <path d="M32 16L37 32L32 48L27 32Z" fill="none" stroke="#1b3a6b" stroke-width="0.8" stroke-linejoin="round"></path>
+              <circle cx="32" cy="32" r="1.7" fill="#ffffff" stroke="#1b3a6b" stroke-width="0.8"></circle>
+              <text x="32" y="13.2" text-anchor="middle" font-size="8.5" font-weight="800" fill="#1b3a6b" font-family="system-ui, sans-serif">N</text>
+            </svg>
+          </div>
+        </div>
+        <div style="position:absolute; bottom:16px; right:16px; display:flex; flex-direction:column; align-items:center; gap:4px; filter:drop-shadow(0 0 1.5px white) drop-shadow(0 0 1.5px white)">
+          <div style="width:{{ scaleBarWidthPx }}px; height:3px; background:oklch(38% 0.15 255); position:relative">
+            <div style="position:absolute; left:0; top:-4px; width:1px; height:8px; background:oklch(38% 0.15 255)"></div>
+            <div style="position:absolute; right:0; top:-4px; width:1px; height:8px; background:oklch(38% 0.15 255)"></div>
+          </div>
+          <div style="color:oklch(38% 0.15 255); font-size:11px; font-weight:700">{{ scaleBarLabel }}</div>
+        </div>
+        <div style="position:absolute; left:16px; bottom:16px; color:oklch(38% 0.15 255); font-size:12px; font-weight:600; text-shadow:0 0 3px white, 0 0 3px white">{{ t.mapHint }}</div>
+        <sc-if value="{{ showAnyLabels }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ mapLabelLeaders }}" as="ld" hint-placeholder-count="0">
+            <div style="position:absolute; left:{{ ld.leaderX }}px; top:{{ ld.leaderY }}px; width:{{ ld.leaderLen }}px; height:1px; background:rgba(20,20,25,0.45); transform-origin:0 50%; transform:rotate({{ ld.leaderDeg }}deg); pointer-events:none"></div>
+            <div style="position:absolute; left:{{ ld.ax }}px; top:{{ ld.ay }}px; width:4px; height:4px; margin:-2px 0 0 -2px; border-radius:50%; background:rgba(20,20,25,0.6); pointer-events:none"></div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ showNumberLabels }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ mapLabels }}" as="lb" hint-placeholder-count="10">
+            <div style="position:absolute; left:{{ lb.x }}px; top:{{ lb.y }}px; transform:translate(-50%,-50%); background:rgba(20,20,25,0.8); color:white; font-size:10px; font-weight:800; width:19px; height:19px; border-radius:50%; display:flex; align-items:center; justify-content:center; pointer-events:none">{{ lb.num }}</div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ showNameLabels }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ mapLabels }}" as="lb" hint-placeholder-count="10">
+            <div style="position:absolute; left:{{ lb.x }}px; top:{{ lb.y }}px; transform:translate(-50%,-50%); background:rgba(20,20,25,0.8); color:white; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; white-space:nowrap; pointer-events:none">{{ lb.name }}</div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ jpgDialogOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; inset:0; z-index:30; background:rgba(15,18,26,0.55); display:flex; align-items:center; justify-content:center; padding:20px" onClick="{{ closeJpgDialog }}">
+            <div onClick="{{ stopPropagation }}" style="width:100%; max-width:360px; background:white; border-radius:14px; padding:22px; box-shadow:0 20px 50px rgba(0,0,0,0.35)">
+              <div style="font-size:17px; font-weight:800; margin-bottom:4px">{{ t.jpgDialogTitle }}</div>
+              <div style="font-size:12.5px; color:oklch(48% 0.02 260); line-height:1.6; margin-bottom:16px">{{ t.jpgDialogDesc }}</div>
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <div onClick="{{ toggleJpgCompass }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+                  <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgCompassBorder }}; background:{{ jpgCompassBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ jpgCompassMark }}</div>
+                  <div style="font-size:14px; font-weight:600">{{ t.jpgCompass }}</div>
+                </div>
+                <div onClick="{{ toggleJpgScale }}" style="display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+                  <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgScaleBorder }}; background:{{ jpgScaleBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center">{{ jpgScaleMark }}</div>
+                  <div style="font-size:14px; font-weight:600">{{ t.jpgScale }}</div>
+                </div>
+                <div onClick="{{ toggleJpgLegend }}" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid oklch(90% 0.01 260); border-radius:10px; cursor:pointer" style-hover="background:oklch(97% 0.01 95)">
+                  <div style="flex:none; width:18px; height:18px; border-radius:5px; border:1px solid {{ jpgLegendBorder }}; background:{{ jpgLegendBg }}; color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:1px">{{ jpgLegendMark }}</div>
+                  <div>
+                    <div style="font-size:14px; font-weight:600">{{ t.jpgLegend }}</div>
+                    <div style="font-size:11.5px; color:oklch(50% 0.02 260); line-height:1.5; margin-top:2px">{{ jpgLegendHint }}</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:20px">
+                <button onClick="{{ confirmExportJpg }}" style="flex:1; padding:11px 16px; border:none; border-radius:10px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-size:14px; font-weight:700; cursor:pointer">{{ t.jpgDownload }}</button>
+                <button onClick="{{ closeJpgDialog }}" style="padding:11px 16px; border-radius:10px; border:1px solid oklch(88% 0.01 260); background:white; font-size:14px; font-weight:700; cursor:pointer">{{ t.cancel }}</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pointsHelpOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closePointsHelp }}" style="position:absolute; inset:0; z-index:40; background:rgba(28,26,22,0.38); display:flex; align-items:center; justify-content:center; padding:24px">
+            <div onClick="{{ stopClick }}" style="width:100%; max-width:560px; max-height:82vh; overflow:auto; background:#f3eee4; border:1px solid oklch(84% 0.02 80); border-radius:14px; box-shadow:0 18px 44px rgba(0,0,0,0.26)">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 18px; border-bottom:1px solid oklch(88% 0.02 80)">
+                <div style="font-size:14px; font-weight:800; color:oklch(26% 0.03 260)">{{ t.pointsHelpTitle }}</div>
+                <button onClick="{{ closePointsHelp }}" style="padding:6px 11px; border-radius:7px; border:1px solid oklch(86% 0.01 260); background:white; font-size:11.5px; font-weight:700; white-space:nowrap; cursor:pointer">{{ t.close }}</button>
+              </div>
+              <div style="padding:16px 18px 20px; display:flex; flex-direction:column; gap:16px">
+                <div style="font-size:12.5px; line-height:1.65; color:oklch(34% 0.02 260)">{{ t.pointsHelpIntro }}</div>
+                <div>
+                  <div style="font-size:11px; font-weight:800; letter-spacing:0.04em; color:oklch(50% 0.02 260); margin-bottom:7px">{{ t.pointsHelpColsTitle }}</div>
+                  <div style="display:flex; flex-direction:column; gap:1px; background:oklch(88% 0.01 260); border:1px solid oklch(88% 0.01 260); border-radius:9px; overflow:hidden">
+                    <sc-for list="{{ pointsHelpCols }}" as="c" hint-placeholder-count="6">
+                      <div style="display:grid; grid-template-columns:96px 1fr; gap:10px; padding:8px 11px; background:white">
+                        <div style="font-size:11.5px; font-weight:800; color:{{ c.keyColor }}">{{ c.key }}</div>
+                        <div style="font-size:11.5px; line-height:1.55; color:oklch(38% 0.02 260)">{{ c.desc }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11px; font-weight:800; letter-spacing:0.04em; color:oklch(50% 0.02 260); margin-bottom:7px">{{ t.pointsHelpExampleTitle }}</div>
+                  <pre style="margin:0; padding:11px 12px; background:white; border:1px solid oklch(90% 0.01 260); border-radius:9px; overflow:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.75; color:oklch(32% 0.02 260)">{{ pointsHelpExample }}</pre>
+                </div>
+                <div style="font-size:11.5px; line-height:1.65; color:oklch(45% 0.02 260)">{{ t.pointsHelpNotes }}</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ sectionOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute; left:16px; right:16px; bottom:16px; z-index:20; background:#f3eee4; border:1px solid oklch(84% 0.02 80); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.22); overflow:hidden">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px 14px; flex-wrap:wrap; padding:8px 12px; border-bottom:1px solid oklch(88% 0.02 80)">
+              <div style="flex:1 1 100%; min-width:0; font-size:12.5px; font-weight:800; color:oklch(28% 0.03 260)">{{ sectionTitle }}</div>
+              <div style="display:flex; align-items:center; gap:10px; flex-shrink:0; white-space:nowrap">
+                <div style="display:flex; align-items:center; gap:5px">
+                  <div style="flex-shrink:0; white-space:nowrap; font-size:11.5px; font-weight:700; color:oklch(40% 0.02 260)">{{ t.vExagLabel }}</div>
+                  <input value="{{ vExagField }}" onChange="{{ onVExagField }}" onBlur="{{ applyVExag }}" onKeyDown="{{ onVExagKey }}" title="{{ t.vExagTip }}" style="width:52px; box-sizing:border-box; padding:5px 6px; border-radius:6px; border:1px solid oklch(86% 0.01 260); font-size:11.5px; font-weight:700; text-align:center; font-family:'IBM Plex Mono',monospace" />
+                </div>
+                <sc-if value="{{ hasPointsForCorridor }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex; align-items:center; gap:5px">
+                    <div style="flex-shrink:0; white-space:nowrap; font-size:11.5px; font-weight:700; color:oklch(40% 0.02 260)">{{ t.corridorLabel }}</div>
+                    <input value="{{ corridorField }}" onChange="{{ onCorridorField }}" onBlur="{{ applyCorridor }}" onKeyDown="{{ onCorridorKey }}" title="{{ t.corridorTip }}" style="width:52px; box-sizing:border-box; padding:5px 6px; border-radius:6px; border:1px solid oklch(86% 0.01 260); font-size:11.5px; font-weight:700; text-align:center; font-family:'IBM Plex Mono',monospace" />
+                    <div style="font-size:11px; color:oklch(50% 0.02 260)">km</div>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="display:flex; gap:6px; flex-shrink:0">
+                <button onClick="{{ downloadSectionPng }}" style="padding:6px 11px; border-radius:7px; border:1px solid oklch(86% 0.01 260); background:white; font-size:11.5px; font-weight:700; white-space:nowrap; cursor:pointer">PNG</button>
+                <button onClick="{{ downloadSectionSvg }}" style="padding:6px 11px; border-radius:7px; border:1px solid oklch(86% 0.01 260); background:white; font-size:11.5px; font-weight:700; white-space:nowrap; cursor:pointer">SVG</button>
+                <button onClick="{{ closeSection }}" style="padding:6px 11px; border-radius:7px; border:1px solid oklch(86% 0.01 260); background:white; font-size:11.5px; font-weight:700; white-space:nowrap; cursor:pointer">{{ t.close }}</button>
+              </div>
+            </div>
+            <sc-if value="{{ showExagNotice }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:8px 12px; background:oklch(96% 0.04 85); border-bottom:1px solid oklch(88% 0.04 85)">
+                <div style="flex:1 1 240px; min-width:0; font-size:11.5px; line-height:1.5; color:oklch(35% 0.04 70)">{{ exagNoticeText }}</div>
+                <div style="display:flex; gap:6px; flex-shrink:0">
+                  <button onClick="{{ dismissExagNotice }}" style="padding:5px 10px; border-radius:6px; border:1px solid oklch(84% 0.03 85); background:white; font-size:11px; font-weight:700; white-space:nowrap; cursor:pointer">{{ t.exagOk }}</button>
+                  <button onClick="{{ muteExagNotice }}" style="padding:5px 10px; border-radius:6px; border:1px solid oklch(84% 0.03 85); background:transparent; font-size:11px; font-weight:700; color:oklch(45% 0.03 70); white-space:nowrap; cursor:pointer">{{ t.exagMute }}</button>
+                </div>
+              </div>
+            </sc-if>
+            <div ref="{{ sectionHost }}" style="padding:8px; overflow:auto; max-height:44vh"></div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  <div style="{{ detailDisplayStyle }}">
+    <div style="max-width:1120px; margin:0 auto; padding:24px 24px 80px">
+      <div onClick="{{ goMap }}" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:14px; color:oklch(45% 0.13 55); margin-bottom:16px; font-weight:600">&larr; {{ t.backToMap }}</div>
+
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:6px">
+        <h1 style="font-size:30px; font-weight:900; margin:0">{{ currentFaultName }}</h1>
+        <span style="padding:4px 10px; border-radius:999px; background:oklch(93% 0.02 55); color:oklch(40% 0.13 55); font-size:12px; font-weight:700">{{ currentFaultActivity }}</span>
+      </div>
+      <div style="font-size:14px; color:oklch(45% 0.02 260); margin-bottom:28px">{{ currentFaultDesc }}</div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:oklch(92% 0.01 260); border:1px solid oklch(92% 0.01 260); border-radius:12px; overflow:hidden; margin-bottom:28px">
+        <sc-for list="{{ statCells }}" as="s" hint-placeholder-count="6">
+          <div style="background:white; padding:16px">
+            <div style="font-size:11px; color:oklch(50% 0.02 260); margin-bottom:6px">{{ s.label }}</div>
+            <div style="font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace">{{ s.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid; grid-template-columns:{{ detailGridCols }}; gap:24px">
+        <div style="background:oklch(20% 0.02 260); border-radius:14px; overflow:hidden">
+          <div style="height:420px; position:relative">
+            <three-d-stage id="fault-3d-stage" name="fault-plane" background="#1c2230"></three-d-stage>
+            <div style="position:absolute; top:10px; left:12px; z-index:3; pointer-events:none; color:oklch(38% 0.15 255); font-size:11px; font-weight:700; text-shadow:0 0 3px white, 0 0 3px white">{{ t.detailExagCaption }}</div>
+            <div style="position:absolute; z-index:3; pointer-events:none; left:16px; top:34px; width:0; height:{{ rulerHeightPx }}px">
+              <div style="position:absolute; left:0; top:0; width:2px; height:100%; background:oklch(38% 0.15 255); filter:drop-shadow(0 0 1.5px white) drop-shadow(0 0 1.5px white)"></div>
+              <sc-for list="{{ depthTicks }}" as="dt" hint-placeholder-count="2">
+                <div style="position:absolute; left:-4px; top:{{ dt.offsetPx }}px; width:10px; height:2px; background:oklch(38% 0.15 255); filter:drop-shadow(0 0 1.5px white) drop-shadow(0 0 1.5px white)"></div>
+                <div style="position:absolute; left:10px; top:{{ dt.offsetPx }}px; transform:translateY(-50%); color:oklch(38% 0.15 255); font-size:10.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; white-space:nowrap; text-shadow:0 0 3px white, 0 0 3px white">{{ dt.label }}</div>
+              </sc-for>
+            </div>
+            <div style="position:absolute; top:12px; right:12px; width:52px; height:52px; z-index:3; pointer-events:none; filter:drop-shadow(0 1px 3px rgba(20,30,50,0.28))">
+              <div style="width:100%; height:100%; transform:rotate({{ detailCompassDeg }}deg)">
+                <svg width="100%" height="100%" viewBox="0 0 64 64" style="display:block; overflow:visible">
+                  <circle cx="32" cy="32" r="30" fill="rgba(255,255,255,0.8)" stroke="#1b3a6b" stroke-opacity="0.45" stroke-width="1"></circle>
+                  <circle cx="32" cy="32" r="23.5" fill="none" stroke="#1b3a6b" stroke-opacity="0.22" stroke-width="0.75"></circle>
+                  <path d="M45 9.48L46.5 6.89M54.52 19L57.11 17.5M54.52 45L57.11 46.5M45 54.52L46.5 57.11M19 54.52L17.5 57.11M9.48 45L6.89 46.5M9.48 19L6.89 17.5M19 9.48L17.5 6.89" stroke="#1b3a6b" stroke-opacity="0.5" stroke-width="0.9" stroke-linecap="round"></path>
+                  <path d="M57 32H61M32 57V61M7 32H3" stroke="#1b3a6b" stroke-opacity="0.75" stroke-width="1.4" stroke-linecap="round"></path>
+                  <path d="M32 16L37 32H32Z" fill="#1b3a6b"></path>
+                  <path d="M32 16L27 32H32Z" fill="#3d6aa8"></path>
+                  <path d="M32 48L37 32H32Z" fill="#c9d1dc"></path>
+                  <path d="M32 48L27 32H32Z" fill="#ffffff"></path>
+                  <path d="M32 16L37 32L32 48L27 32Z" fill="none" stroke="#1b3a6b" stroke-width="0.8" stroke-linejoin="round"></path>
+                  <circle cx="32" cy="32" r="1.7" fill="#ffffff" stroke="#1b3a6b" stroke-width="0.8"></circle>
+                  <text x="32" y="13.2" text-anchor="middle" font-size="8.5" font-weight="800" fill="#1b3a6b" font-family="system-ui, sans-serif">N</text>
+                </svg>
+              </div>
+            </div>
+            <div style="position:absolute; bottom:12px; right:12px; display:flex; flex-direction:column; align-items:center; gap:4px; z-index:3; pointer-events:none; filter:drop-shadow(0 0 1.5px white) drop-shadow(0 0 1.5px white)">
+              <div style="width:{{ detailScaleBarWidthPx }}px; height:3px; background:oklch(38% 0.15 255); position:relative">
+                <div style="position:absolute; left:0; top:-4px; width:1px; height:8px; background:oklch(38% 0.15 255)"></div>
+                <div style="position:absolute; right:0; top:-4px; width:1px; height:8px; background:oklch(38% 0.15 255)"></div>
+              </div>
+              <div style="color:oklch(38% 0.15 255); font-size:11px; font-weight:700">{{ detailScaleBarLabel }}</div>
+            </div>
+          </div>
+          <div style="padding:12px 16px; color:rgba(255,255,255,0.6); font-size:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px">
+            <span>{{ t.detailModelNote }}</span>
+            <span onClick="{{ openPhotoModal }}" style="cursor:pointer; color:oklch(75% 0.13 55); font-weight:700">{{ t.openPhotoTemplate }} &rarr;</span>
+          </div>
+        </div>
+
+        <div style="background:white; border:1px solid oklch(92% 0.01 260); border-radius:14px; padding:20px; display:flex; flex-direction:column; gap:16px; height:fit-content">
+          <div style="font-size:15px; font-weight:700">{{ t.addToExport }}</div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:14px; cursor:pointer">
+            <input type="checkbox" checked="{{ currentInCart }}" onChange="{{ toggleCurrentCart }}" />
+            {{ addThisLabel }}
+          </label>
+          <div>
+            <div style="font-size:12px; color:oklch(50% 0.02 260); margin-bottom:6px">{{ t.exportFormat }}</div>
+            <sc-for list="{{ formatOptions }}" as="fmt" hint-placeholder-count="3">
+              <div onClick="{{ fmt.onClick }}" style="padding:10px 12px; border-radius:8px; border:1px solid {{ fmt.borderColor }}; background:{{ fmt.bg }}; cursor:pointer; margin-bottom:8px">
+                <div style="font-size:13px; font-weight:700; color:{{ fmt.textColor }}">{{ fmt.label }}</div>
+                <div style="font-size:11px; color:oklch(50% 0.02 260); margin-top:2px">{{ fmt.hint }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ goExport }}" style="padding:12px; border:none; border-radius:10px; background:oklch(20% 0.02 260); color:white; font-weight:700; font-size:14px; cursor:pointer">{{ goExportLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPORT PAGE -->
+  <div style="{{ exportDisplayStyle }}">
+    <div style="max-width:1180px; margin:0 auto; padding:32px 24px 100px">
+      <div onClick="{{ goMap }}" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-size:14px; color:oklch(45% 0.13 55); margin-bottom:16px; font-weight:600">&larr; {{ t.backToMap }}</div>
+      <h2 style="font-size:26px; font-weight:800; margin:0 0 8px">{{ t.exportTitle }}</h2>
+      <p style="font-size:14px; color:oklch(45% 0.02 260); margin:0 0 24px">{{ exportPickHint }}</p>
+
+      <div style="display:grid; grid-template-columns:{{ detailGridCols }}; gap:24px; align-items:start">
+        <div>
+          <div style="background:white; border:1px solid oklch(92% 0.01 260); border-radius:14px; padding:18px; margin-bottom:16px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:12px">
+              <div style="font-size:13px; font-weight:800">{{ t.exportPickTitle }}</div>
+              <div style="display:flex; gap:12px">
+                <div onClick="{{ selectAllVisible }}" style="font-size:12px; font-weight:700; color:oklch(45% 0.13 55); cursor:pointer">{{ t.selectAllVisible }}</div>
+                <div onClick="{{ clearCart }}" style="font-size:12px; font-weight:700; color:oklch(50% 0.02 260); cursor:pointer">{{ t.clearSelection }}</div>
+              </div>
+            </div>
+            <input value="{{ exportQuery }}" onChange="{{ onExportQuery }}" placeholder="{{ t.searchPh }}" style="width:100%; box-sizing:border-box; padding:10px 12px; border-radius:9px; border:1px solid oklch(87% 0.01 260); font-size:13.5px; margin-bottom:10px" />
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; padding:3px; background:oklch(96% 0.01 260); border-radius:9px; margin-bottom:12px">
+              <div onClick="{{ setExportDomainLand }}" style="text-align:center; padding:7px 2px; border-radius:7px; cursor:pointer; font-size:11.5px; font-weight:800; background:{{ exDomainLandBg }}; color:{{ exDomainLandColor }}">{{ t.domainLand }}</div>
+              <div onClick="{{ setExportDomainAll }}" style="text-align:center; padding:7px 2px; border-radius:7px; cursor:pointer; font-size:11.5px; font-weight:800; background:{{ exDomainAllBg }}; color:{{ exDomainAllColor }}">{{ t.domainAll }}</div>
+              <div onClick="{{ setExportDomainSea }}" style="text-align:center; padding:7px 2px; border-radius:7px; cursor:pointer; font-size:11.5px; font-weight:800; background:{{ exDomainSeaBg }}; color:{{ exDomainSeaColor }}">{{ t.domainSea }}</div>
+            </div>
+          <div style="display:flex; flex-direction:column; gap:2px; max-height:520px; overflow-y:auto">
+              <sc-for list="{{ exportPickList }}" as="ep" hint-placeholder-count="8">
+                <label style="display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; cursor:pointer; background:{{ ep.rowBg }}" style-hover="background:oklch(96% 0.02 95)">
+                  <input type="checkbox" checked="{{ ep.checked }}" onChange="{{ ep.onToggle }}" style="flex:none; width:16px; height:16px; cursor:pointer" />
+                  <span style="flex:none; width:34px; font-size:11px; font-weight:800; color:{{ ep.numColor }}; font-family:'IBM Plex Mono',monospace">{{ ep.num }}</span>
+                  <span style="flex:1; min-width:0; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">{{ ep.name }}</span>
+                  <span style="flex:none; font-size:11px; color:oklch(52% 0.02 260)">{{ ep.meta }}</span>
+                </label>
+              </sc-for>
+            </div>
+            <div style="font-size:11.5px; color:oklch(55% 0.02 260); margin-top:10px">{{ exportListFooter }}</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:16px">
+          <div style="background:white; border:1px solid oklch(92% 0.01 260); border-radius:14px; padding:18px">
+            <div style="font-size:13px; font-weight:800; margin-bottom:12px">{{ selectedListTitle }}</div>
+            <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px; color:oklch(52% 0.02 260); line-height:1.6">{{ t.exportEmpty }}</div>
+            </sc-if>
+            <div style="display:flex; flex-direction:column; gap:8px; max-height:260px; overflow-y:auto">
+              <sc-for list="{{ cartItems }}" as="ci" hint-placeholder-count="0">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; background:oklch(97% 0.01 95); border-radius:9px">
+                  <div style="min-width:0">
+                    <div style="font-size:13.5px; font-weight:700">{{ ci.name }}</div>
+                    <div style="font-size:11px; color:oklch(45% 0.02 260); margin-top:2px">{{ ci.meta }}</div>
+                  </div>
+                  <div onClick="{{ ci.onRemove }}" style="cursor:pointer; font-size:12px; color:oklch(50% 0.13 30); font-weight:700; flex:none">{{ t.remove }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background:white; border:1px solid oklch(92% 0.01 260); border-radius:14px; padding:18px">
+            <div style="font-size:13px; font-weight:800; margin-bottom:12px">{{ t.exportFormat }}</div>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px">
+              <sc-for list="{{ cartFormatOptions }}" as="cf" hint-placeholder-count="3">
+                <div onClick="{{ cf.onClick }}" style="padding:12px 14px; border-radius:10px; border:1px solid {{ cf.borderColor }}; background:{{ cf.bg }}; color:{{ cf.textColor }}; cursor:pointer">
+                  <div style="font-size:14px; font-weight:700">{{ cf.label }}</div>
+                  <div style="font-size:12px; margin-top:2px; opacity:0.75">{{ cf.hint }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ showContourPicker }}" hint-placeholder-val="{{ true }}">
+              <div style="border-top:1px solid oklch(93% 0.01 260); padding-top:14px; margin-bottom:18px">
+                <div style="font-size:13px; font-weight:800; margin-bottom:4px">{{ contourTitle }}</div>
+                <div style="font-size:12px; color:oklch(50% 0.02 260); margin-bottom:10px">{{ contourHint }}</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap">
+                  <sc-for list="{{ contourOptions }}" as="co" hint-placeholder-count="4">
+                    <div onClick="{{ co.onClick }}" style="padding:8px 14px; border-radius:999px; border:1px solid {{ co.borderColor }}; background:{{ co.bg }}; color:{{ co.textColor }}; font-size:13px; font-weight:700; cursor:pointer">{{ co.label }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <button onClick="{{ doExport }}" style="width:100%; padding:14px; border:none; border-radius:10px; background:oklch(68% 0.16 55); color:oklch(20% 0.02 260); font-weight:800; font-size:15px; cursor:pointer">{{ doExportLabel }}</button>
+            <div style="font-size:11px; color:oklch(55% 0.02 260); margin-top:10px; text-align:center">{{ t.prototypeNote }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHOTO TEMPLATE MODAL -->
+  <sc-if value="{{ photoModalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; inset:0; background:rgba(20,20,25,0.55); z-index:80; display:flex; align-items:center; justify-content:center; padding:20px" onClick="{{ closePhotoBackdrop }}">
+      <div onClick="{{ stopPropagation }}" style="background:white; border-radius:16px; width:min(640px,100%); padding:24px">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px">
+          <div style="font-size:17px; font-weight:800">{{ t.photoTitle }}</div>
+          <div onClick="{{ closePhotoModal }}" style="cursor:pointer; font-size:20px; color:oklch(50% 0.02 260); line-height:1">&times;</div>
+        </div>
+        <div style="position:relative; border-radius:12px; overflow:hidden; aspect-ratio:4/3; background:oklch(30% 0.02 240)">
+          <image-slot id="photo-template-slot" placeholder="{{ t.photoSlot }}" shape="rect" style="position:absolute; inset:0; width:100%; height:100%"></image-slot>
+
+          <div style="position:absolute; top:14px; right:14px; display:flex; flex-direction:column; align-items:center; color:white">
+            <div style="width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:18px solid oklch(68% 0.16 55)"></div>
+            <div style="font-size:11px; font-weight:700; margin-top:2px">N</div>
+          </div>
+
+          <div style="position:absolute; left:14px; bottom:44px; color:white; font-family:'IBM Plex Mono',monospace">
+            <div style="display:flex; align-items:center; gap:2px">
+              <div style="width:60px; height:4px; background:white"></div>
+              <div style="width:60px; height:4px; background:transparent; border-top:4px solid white; border-bottom:4px solid white"></div>
+            </div>
+            <div style="font-size:11px; margin-top:4px">0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;250 m</div>
+          </div>
+
+          <div style="position:absolute; left:14px; top:14px; color:white">
+            <div style="font-size:15px; font-weight:800">{{ currentFaultName }}</div>
+            <div style="font-size:11px; opacity:0.8; font-family:'IBM Plex Mono',monospace">{{ photoMetaLine }}</div>
+          </div>
+        </div>
+        <button onClick="{{ downloadPhotoDemo }}" style="width:100%; margin-top:16px; padding:12px; border:none; border-radius:10px; background:oklch(20% 0.02 260); color:white; font-weight:700; font-size:14px; cursor:pointer">{{ t.photoDownload }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- TOAST -->
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:oklch(20% 0.02 260); color:white; padding:12px 22px; border-radius:999px; font-size:14px; z-index:100; box-shadow:0 8px 24px rgba(0,0,0,0.25)">{{ toast }}</div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;primaryAccent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;oklch(68% 0.16 55)&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;oklch(68% 0.16 55)&quot;,&quot;oklch(62% 0.11 200)&quot;,&quot;oklch(60% 0.14 150)&quot;,&quot;oklch(55% 0.15 25)&quot;]},&quot;defaultExportFormat&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;all&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;all&quot;,&quot;obj&quot;,&quot;xyz&quot;,&quot;shp&quot;]}}">
+const STRINGS = {
+  zh: {
+    siteTitle: '台灣活動斷層 3D 資料庫', navHome: '首頁', navMap: '地圖查詢', navExport: '匯出清單',
+    heroTitle: '看見地下的斷層面', heroCta: '進入地圖查詢',
+    sectionExplore: '功能探索', sectionHowto: '使用說明',
+    contactTitle: '有資料合作或功能需求？', contactDesc: '歡迎提出斷層資料、研究合作或功能建議。',
+    sideView: '檢視', sideAdd: '新增', sideEdit: '顯示',
+    searchPh: '搜尋斷層名稱...', tabAll: '全部顯示', tabLocal: '局部顯示',
+    coordSearch: '座標定位（WGS84）', lonPh: '經度', latPh: '緯度', depthPh: '深度 km',
+    coordRadiusLabel: '定位點半徑',
+    locateBtn: '在地圖上定位', clearBtn: '清除',
+    mapLabelLabel: '地圖標籤', labelNumber: '數字', labelName: '名稱', labelNone: '不顯示',
+    trenchLabel: '海溝與隱沒界面', trenchHint: '琉球與馬尼拉海溝軸線（貼合海底地形）與其隱沒界面，深度至 60 km。',
+    trenchRef: 'refs: USGS Slab 2.0',
+    sectionRefs: '參考資料',
+    vertExagLabel: '地表高程倍率', vertExagHint: '同時放大地表起伏與地表以下的構造，斷層與地形維持貼合。',
+    terrainOpacityLabel: '地表透明度', terrainOpacityHint: '調低可透視地表下方的斷層面。',
+    typeColorsLabel: '依斷層分類上色',
+    legendReverse: '逆移斷層', legendNormal: '正移斷層', legendStrikeSlip: '平移斷層',
+    lineSourceLabel: '地圖邊界線', lineSourceCoastline: '台灣本島海岸線', lineSourceCounty: '縣市界',
+    domainLabel: '斷層範圍', domainLand: '陸域', domainAll: '全部', domainSea: '海域',
+    pointsLabel: '匯入震源點資料', pointsHint: 'CSV 或 .xlsx，需含經度、緯度、深度（km，正數往下）；可選規模、分組、時間',
+    pointsPick: '選擇檔案上傳', pointsClear: '清除所有點',
+    pointsHelpTitle: '震源點資料格式說明',
+    pointsHelpIntro: '上傳地震目錄後，每筆紀錄會依經緯度與深度放進 3D 場景，並可在剖面圖上顯示。支援 CSV、TXT 與 Excel（.xlsx），可一次選多個檔案，重複上傳會累加。',
+    pointsHelpColsTitle: '欄位',
+    pointsHelpExampleTitle: 'CSV 範例',
+    pointsHelpNotes: '欄名不分大小寫，中英文皆可辨識；若第一列不是可辨識的欄名，則依序視為經度、緯度、深度、規模、分組、時間。經緯度超出台灣周邊（116–126°E、18–27.5°N）或無法解析的列會被略過並回報筆數。深度以海平面為基準換算成高程，與地形、斷層共用同一座標系。',
+    groupMain: '主震', groupAfter: '餘震', groupNone: '未分組',
+    sectionLabel: '地質剖面', secAPh: 'A 端經,緯', secBPh: 'B 端經,緯',
+    corridorLabel: '廊帶', vExagLabel: '垂直倍率', sectionDraw: '繪製剖面',
+    vExagTip: '縱軸相對橫軸的倍率，輸入 1 為等比例（真實傾角），按 Enter 套用',
+    exagOk: '了解', exagMute: '不再顯示',
+    corridorTip: '只納入距剖面此範圍內的震源（km），按 Enter 套用',
+    sectionPickStart: '在地圖上點選兩點', sectionPickStop: '取消點選',
+    sectionPickHint: '點選兩點，或直接輸入兩組經緯度', sectionPickActive: '點選中：請在地圖上點擊',
+    close: '關閉',
+    statWidth: '斷層面寬度', statSeabed: '平均水深',
+    exportJpgBtn: '匯出 JPG', mapHint: '左鍵拖曳平移 · 中鍵旋轉 · 滾輪縮放 · 右鍵點選剖面端點',
+    jpgDialogTitle: '匯出 JPG 設定', jpgDialogDesc: '選擇要一併輸出到圖片上的圖面元素。',
+    jpgCompass: '指北針', jpgScale: '比例尺', jpgLegend: '斷層名稱對照表（左下角）',
+    jpgDownload: '下載 JPG', cancel: '取消',
+    backToMap: '回到地圖查詢',
+    statTem: 'TEM 規模', statDepth: '斷層深度', statDip: '傾角', statLength: '斷層長度', statSlip: '滑移型態',
+    detailExagCaption: '真實高程比例（未放大）',
+    detailModelNote: '3D 模型示意（拖曳旋轉 · 滾輪縮放）— 待模型室資料整合後將替換為實測幾何',
+    openPhotoTemplate: '開啟拍照模板',
+    addToExport: '加入匯出清單', exportFormat: '匯出格式',
+    exportTitle: '匯出清單',
+    exportEmpty: '尚未選取任何斷層。在左側清單勾選要匯出的斷層。',
+    clearSelection: '清除全部選取', remove: '移除',
+    exportPickTitle: '選擇要匯出的斷層', selectAllVisible: '全選目前清單',
+    prototypeNote: '匯出為 zip：每個斷層一個檔案，附 attributes.csv。Z 值為海平面絕對高程。',
+    photoTitle: '拍照模板預覽', photoSlot: '斷層面 3D 截圖', photoDownload: '下載照片（demo）',
+    legendTitle: '斷層名稱對照',
+  },
+  en: {
+    siteTitle: 'Taiwan Active Fault 3D Database', navHome: 'Home', navMap: 'Map', navExport: 'Export list',
+    heroTitle: 'See the fault planes beneath Taiwan', heroCta: 'Open the map',
+    sectionExplore: 'What you can do', sectionHowto: 'How to use',
+    contactTitle: 'Data collaboration or feature requests?', contactDesc: 'We welcome fault data, research collaboration and feature suggestions.',
+    sideView: 'Browse', sideAdd: 'Add', sideEdit: 'Display',
+    searchPh: 'Search fault name...', tabAll: 'Show all', tabLocal: 'Show selection',
+    coordSearch: 'Locate by coordinate (WGS84)', lonPh: 'Lon', latPh: 'Lat', depthPh: 'Depth km',
+    coordRadiusLabel: 'Marker radius',
+    locateBtn: 'Locate on map', clearBtn: 'Clear',
+    mapLabelLabel: 'Labels', labelNumber: 'Number', labelName: 'Name', labelNone: 'None',
+    trenchLabel: 'Trenches & interfaces', trenchHint: 'Ryukyu and Manila trench axes draped on the seabed, with their subduction interfaces down to 60 km.',
+    trenchRef: 'refs: USGS Slab 2.0',
+    sectionRefs: 'References',
+    vertExagLabel: 'Vertical exaggeration', vertExagHint: 'Stretches the ground relief and the structures below it together, so faults stay welded to the topography.',
+    terrainOpacityLabel: 'Ground surface opacity', terrainOpacityHint: 'Lower it to see fault planes through the ground.',
+    typeColorsLabel: 'Colour faults by slip type',
+    legendReverse: 'Reverse fault', legendNormal: 'Normal fault', legendStrikeSlip: 'Strike-slip fault',
+    lineSourceLabel: 'Map boundary line', lineSourceCoastline: 'Taiwan coastline', lineSourceCounty: 'County boundaries',
+    domainLabel: 'Fault domain', domainLand: 'Onshore', domainAll: 'All', domainSea: 'Offshore',
+    pointsLabel: 'Import hypocentre data', pointsHint: 'CSV or .xlsx with longitude, latitude and depth (km, positive down); magnitude, group and time optional',
+    pointsPick: 'Choose files', pointsClear: 'Clear all points',
+    pointsHelpTitle: 'Hypocentre data format',
+    pointsHelpIntro: 'Each record is placed in the 3D scene by longitude, latitude and depth, and can also be plotted on a cross-section. CSV, TXT and Excel (.xlsx) are supported; several files can be chosen at once and further uploads add to what is loaded.',
+    pointsHelpColsTitle: 'Columns',
+    pointsHelpExampleTitle: 'CSV example',
+    pointsHelpNotes: 'Header names are case-insensitive and recognised in English or Chinese. With no recognisable header row the columns are read in order as longitude, latitude, depth, magnitude, group, time. Rows outside the Taiwan region (116–126°E, 18–27.5°N) or with unparseable numbers are skipped and counted. Depth is converted to elevation relative to sea level, the same datum as the terrain and faults.',
+    groupMain: 'Mainshock', groupAfter: 'Aftershock', groupNone: 'Ungrouped',
+    sectionLabel: 'Cross-section', secAPh: 'A lon,lat', secBPh: 'B lon,lat',
+    corridorLabel: 'Corridor', vExagLabel: 'V. exag.', sectionDraw: 'Draw section',
+    vExagTip: 'Vertical-to-horizontal scale ratio; enter 1 for true scale (real dip angles). Press Enter to apply',
+    exagOk: 'Got it', exagMute: "Don't show again",
+    corridorTip: 'Only hypocentres within this distance of the section are plotted (km). Press Enter to apply',
+    sectionPickStart: 'Pick two points on the map', sectionPickStop: 'Cancel picking',
+    sectionPickHint: 'Pick two points, or type two coordinate pairs', sectionPickActive: 'Picking: click on the map',
+    close: 'Close',
+    statWidth: 'Fault width', statSeabed: 'Mean water depth',
+    exportJpgBtn: 'Export JPG', mapHint: 'Left-drag pan · Middle-drag rotate · Wheel zoom · Right-click to pick section ends',
+    jpgDialogTitle: 'JPG export settings', jpgDialogDesc: 'Choose which map elements to draw into the image.',
+    jpgCompass: 'North arrow', jpgScale: 'Scale bar', jpgLegend: 'Fault name key (bottom-left)',
+    jpgDownload: 'Download JPG', cancel: 'Cancel',
+    backToMap: 'Back to map',
+    statTem: 'TEM magnitude', statDepth: 'Depth', statDip: 'Dip', statLength: 'Fault length', statSlip: 'Slip type',
+    detailExagCaption: 'True vertical scale (no exaggeration)',
+    detailModelNote: '3D model preview (drag to rotate · wheel to zoom) — to be replaced by surveyed geometry',
+    openPhotoTemplate: 'Open photo template',
+    addToExport: 'Add to export list', exportFormat: 'Export format',
+    exportTitle: 'Export list',
+    exportEmpty: 'Nothing selected yet. Tick the faults you want in the list on the left.',
+    clearSelection: 'Clear all', remove: 'Remove',
+    exportPickTitle: 'Choose faults to export', selectAllVisible: 'Select all listed',
+    prototypeNote: 'Exports as a zip: one file per fault, plus attributes.csv. Z is absolute elevation above sea level.',
+    photoTitle: 'Photo template preview', photoSlot: 'Fault plane 3D capture', photoDownload: 'Download photo (demo)',
+    legendTitle: 'Fault name key',
+  },
+};
+
+const REGION_EN = { '北部': 'Northern Taiwan', '中部': 'Central Taiwan', '南部': 'Southern Taiwan', '東部': 'Eastern Taiwan', '海域': 'Offshore', '—': '—' };
+const QUERY_POINT_COLORS = ['#1f6feb', '#9333ea', '#0d9488', '#db2777', '#b45309'];
+const SLIP_EN = {
+  '逆移斷層': 'Reverse', '正移斷層': 'Normal',
+  '右移斷層': 'Dextral strike-slip', '左移斷層': 'Sinistral strike-slip',
+  '右移兼逆移斷層': 'Dextral-reverse', '逆移兼右移斷層': 'Reverse-dextral',
+  '右移/逆移複合': 'Dextral-reverse', '平移斷層': 'Strike-slip',
+  R: 'Reverse', N: 'Normal', SS: 'Strike-slip', 'SS/R': 'Dextral-reverse', 'R/SS': 'Reverse-dextral',
+};
+const AZ_EN = { '北': 'N', '東北': 'NE', '東': 'E', '東南': 'SE', '南': 'S', '西南': 'SW', '西': 'W', '西北': 'NW' };
+const TYPE_COLOR = { R: 0xd93025, N: 0x1e9e4a, SS: 0x8b5a2b };
+
+class Component extends DCLogic {
+  state = {
+    faults: [],
+    currentPage: 'home',
+    lang: 'zh',
+    selectedFaultId: null,
+    cart: [],
+    photoModalOpen: false,
+    searchQuery: '',
+    sidePage: 'view',
+    markerRadius: 700,
+    mapTab: 'all',
+    localIds: [],
+    labelMode: 'number',
+    jpgDialogOpen: false,
+    jpgCompass: true,
+    jpgScale: true,
+    jpgLegend: true,
+    qLon: '',
+    qLat: '',
+    qDepth: '',
+    queryPoints: [],
+    vertExag: 1,
+    terrainOpacity: 1,
+    typeColors: false,
+    lineSource: 'coastline',
+    showTrench: true,
+    domain: 'land',
+    points: [],
+    sectionEnds: [],
+    sectionPicking: false,
+    sectionOpen: false,
+    sectionStats: null,
+    secA: '',
+    secB: '',
+    corridorKm: 10,
+    sectionVExag: 1,
+    exportQuery: '',
+    exportDomain: 'all',
+    toast: null,
+    isMobile: typeof window !== 'undefined' ? window.innerWidth < 800 : false,
+    cartFormat: this.props.defaultExportFormat || 'all',
+    contourKm: 2,
+  };
+
+  L(zh, en) { return this.state.lang === 'en' ? en : zh; }
+
+  faultName(f) { return this.state.lang === 'en' ? (f.nameE || f.name) : f.name; }
+  faultSlip(f) {
+    if (this.state.lang !== 'en') return f.slipType;
+    if (f.slipTypeEn) return f.slipTypeEn;
+    return SLIP_EN[f.slipType] || SLIP_EN[f.type] || this.slipFromCode(f.slipType || f.type) || f.slipType;
+  }
+
+  /** Fallback for abbreviation forms like "SS", "R/SS", "N/SS". */
+  slipFromCode(code) {
+    const s = String(code || '').toUpperCase();
+    if (!s || /[^A-Z/\s]/.test(s)) return null;
+    const words = { R: 'Reverse', N: 'Normal', SS: 'Strike-slip' };
+    const parts = s.split('/').map(p => words[p.trim()]).filter(Boolean);
+    return parts.length ? parts.join('-') : null;
+  }
+  faultRegion(f) { return this.state.lang === 'en' ? (REGION_EN[f.region] || f.region) : f.region; }
+
+  /** TEM characteristic magnitude (Mw), from the TEM active-fault reference table. */
+  temMagnitude(f) {
+    const m = Number(f.temMag);
+    if (!m) return '—';
+    return 'Mw ' + m.toFixed(2);
+  }
+
+  waitGlobal(name) {
+    return new Promise((resolve) => {
+      const check = () => (window[name] ? resolve(window[name]) : setTimeout(check, 16));
+      check();
+    });
+  }
+
+  async componentDidMount() {
+    try { this._exagMuted = localStorage.getItem('faults3d.exagNoticeMuted') === '1'; } catch (e) {}
+    this._lastMapTab = this.state.mapTab;
+    this._lastLocalIds = this.state.localIds;
+    this._lastCart = this.state.cart;
+    this._lastDomain = this.state.domain;
+    const mod = await this.waitGlobal('__faultsDataModule');
+    const off = await this.waitGlobal('__offshoreFaultsModule');
+    // one list: the 48 TEM land faults followed by the 55 offshore structures, told apart by
+    // `offshore` so the domain switch, the map and the export cart can all filter on it
+    this.setState({ faults: [...mod.FAULTS, ...off.OFFSHORE], selectedFaultId: mod.FAULTS[0].id, formats: mod.EXPORT_FORMATS });
+    this.waitGlobal('__bathyModule').then((bm) => {
+      this._bathy = bm.BATHY;
+      // the grid decodes asynchronously; rebuild once it is in so the seabed appears without a reload
+      Promise.all([bm.BATHY.ready, this.waitGlobal('__landMaskModule').then((lm) => lm.LANDMASK.ready)])
+        .then(() => this.buildMap());
+    });
+    this._resize = () => this.setState({ isMobile: window.innerWidth < 800 });
+    window.addEventListener('resize', this._resize);
+    this.initStage();
+    this.heroParallaxRef = this.heroParallaxRef || React.createRef();
+    this._onScroll = () => {
+      const el = this.heroParallaxRef.current;
+      if (el) el.style.transform = 'translateY(' + (window.scrollY * 0.35) + 'px)';
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._resize);
+    window.removeEventListener('scroll', this._onScroll);
+    if (this._overlayTimer) clearInterval(this._overlayTimer);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this._lastSelectedFaultId !== this.state.selectedFaultId) {
+      this._lastSelectedFaultId = this.state.selectedFaultId;
+      this.buildModel();
+    }
+    if (this._lastMapTab !== this.state.mapTab || this._lastLocalIds !== this.state.localIds) {
+      this._lastMapTab = this.state.mapTab;
+      this._lastLocalIds = this.state.localIds;
+      this.buildMap();
+    }
+    if (this._lastTypeColors !== this.state.typeColors) {
+      this._lastTypeColors = this.state.typeColors;
+      this.applyFaultColors();
+    }
+    if (this._lastVertExag !== this.state.vertExag) {
+      this._lastVertExag = this.state.vertExag;
+      this.applyVertExag();
+      // markers whose offsets are object positions or instance matrices are rebuilt, not rescaled
+      this.drawSectionMarkers();
+      this.drawQueryPoints();
+      this.applyPointCloud();
+    }
+    if (this._lastTerrainOpacity !== this.state.terrainOpacity) {
+      this._lastTerrainOpacity = this.state.terrainOpacity;
+      this.applyTerrainOpacity();
+    }
+    if (this._lastDomain !== this.state.domain) {
+      this._lastDomain = this.state.domain;
+      this.buildMap();
+    }
+    if (this._lastLineSource !== this.state.lineSource) {
+      this._lastLineSource = this.state.lineSource;
+      this.applyCountyOverlay();
+    }
+    const pageChanged = this._lastPage !== this.state.currentPage;
+    this._lastPage = this.state.currentPage;
+    if (pageChanged && this.state.currentPage === 'detail') this.refitStage();
+    // the export page is a plain checklist now -- no 3D stage to build
+    if (pageChanged && this.state.currentPage === 'map' && this._mapStage) {
+      const ms = this._mapStage;
+      setTimeout(() => { if (ms.refit) ms.refit(); }, 0);
+      setTimeout(() => { if (ms.refit) ms.refit(); }, 150);
+    }
+  }
+
+  // ---------------------------------------------------------------- imported point data
+
+  async onPointFiles(ev) {
+    const files = [...(ev.target.files || [])];
+    if (!files.length) return;
+    try {
+      const mod = await this.waitGlobal('__pointDataModule');
+      let added = [], skipped = 0;
+      for (const file of files) {
+        const r = await mod.readPointFile(file);
+        added = added.concat(r.points);
+        skipped += r.skipped;
+      }
+      if (!added.length) {
+        this.showToast(this.L('讀不到有效的點位，請確認欄位為經度、緯度、深度',
+          'No valid points found — check the lon / lat / depth columns'));
+        return;
+      }
+      const points = [...(this.state.points || []), ...added];
+      this.setState({ points }, () => this.applyPointCloud());
+      const msg = this.L(
+        '已載入 ' + added.length + ' 個點' + (skipped ? '，略過 ' + skipped + ' 筆無效資料' : ''),
+        'Loaded ' + added.length + ' points' + (skipped ? ', skipped ' + skipped + ' invalid rows' : ''));
+      this.showToast(msg);
+    } catch (err) {
+      console.error(err);
+      this.showToast(this.L('檔案讀取失敗，請改用 CSV 再試一次', 'Could not read the file — try CSV instead'));
+    }
+    ev.target.value = '';
+  }
+
+  clearPoints() {
+    this.setState({ points: [] }, () => this.applyPointCloud());
+  }
+
+  async applyPointCloud() {
+    const THREE = this._THREE;
+    if (!THREE || !this._mapGroup || !this._lonLatToLocalMeters) return;
+    if (this._pointCloud) {
+      this._mapGroup.remove(this._pointCloud);
+      this._pointCloud.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+      this._pointCloud = null;
+    }
+    const pts = this.state.points || [];
+    if (!pts.length) return;
+    const mod = await this.waitGlobal('__pointDataModule');
+    const g = mod.buildPointCloud(THREE, pts, this._lonLatToLocalMeters, 120.7, 23.7,
+      Number(this.state.markerRadius) || 700, Number(this.state.vertExag) || 1);
+    this._pointCloud = g;
+    this._mapGroup.add(g);
+  }
+
+  // ---------------------------------------------------------------- cross-section
+
+  /** The button now just clears the pair; picking itself is always available via right-click. */
+  toggleSectionPick() {
+    this.setState({ sectionEnds: [], sectionPicking: false, secA: '', secB: '' },
+      () => this.drawSectionMarkers());
+    this.showToast(this.L('已清除，請在地圖上按右鍵點選 A 端', 'Cleared — right-click the map to set end A'));
+  }
+
+  /** Records a picked end point; on the second one the section is drawn. A third right-click starts
+   *  a new pair from scratch, so the markers always show the section that is on screen. */
+  addSectionEnd(lon, lat) {
+    // functional update: two picks in quick succession must not both read the same old state, or
+    // the second one would overwrite A instead of becoming B
+    let done = false;
+    this.setState((s) => {
+      const prev = s.sectionEnds || [];
+      const ends = prev.length >= 2 ? [{ lon, lat }] : [...prev, { lon, lat }];
+      done = ends.length === 2;
+      return {
+        sectionEnds: ends,
+        sectionPicking: !done,
+        secA: ends[0] ? ends[0].lon.toFixed(4) + ', ' + ends[0].lat.toFixed(4) : '',
+        secB: ends[1] ? ends[1].lon.toFixed(4) + ', ' + ends[1].lat.toFixed(4) : '',
+      };
+    }, () => { this.drawSectionMarkers(); if (done) this.drawSection(); });
+  }
+
+  /** Ground elevation used to plant a marker: land DEM, seabed where the DEM has no land. Scaled by
+   *  the vertical exaggeration so markers sit on the surface as drawn, not on its true height. */
+  groundY(lon, lat) {
+    const k = Number(this.state.vertExag) || 1;
+    const e = this._dem ? this._dem.sample(lon, lat) : 0;
+    if (e > 0) return e * k;
+    if (this._bathy && this._bathy.loaded) return Math.min(this._bathy.sample(lon, lat), 0) * k;
+    return e * k;
+  }
+
+  /** A / B markers plus the section line, kept on the map so the picked positions stay visible. */
+  drawSectionMarkers() {
+    const THREE = this._THREE;
+    if (!THREE || !this._mapGroup || !this._lonLatToLocalMeters) return;
+    if (this._sectionMarkers) {
+      this._sectionMarkers.forEach((g) => {
+        this._mapGroup.remove(g);
+        g.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+      });
+    }
+    this._sectionMarkers = [];
+    const ends = this.state.sectionEnds || [];
+    const COLORS = ['#1b3a6b', '#c2410c'];
+    const LABELS = ['A', 'B'];
+    // Each marker is a local group planted on the ground; only scale.y is driven by camera distance
+    // (see updateMapOverlays), so the pin keeps a constant on-screen height at every zoom level.
+    ends.forEach((p, i) => {
+      const local = this._lonLatToLocalMeters(p.lon, p.lat, 120.7, 23.7);
+      const y = this.groundY(p.lon, p.lat);
+      const g = new THREE.Group();
+      g.position.set(local.x, y, local.z);
+      // One canvas sprite holds the whole pin -- white-haloed dot with its letter above it -- drawn
+      // without size attenuation so it stays the same size on screen and reads at top-down views,
+      // where a vertical stem would foreshorten to nothing.
+      const col = COLORS[i] || COLORS[0];
+      const cv = document.createElement('canvas');
+      cv.width = 128; cv.height = 128;
+      const cx = cv.getContext('2d');
+      cx.textAlign = 'center'; cx.textBaseline = 'middle';
+      cx.font = 'bold 46px ui-sans-serif, system-ui, sans-serif';
+      cx.lineWidth = 9; cx.strokeStyle = 'rgba(255,255,255,0.95)';
+      cx.strokeText(LABELS[i] || '', 64, 34);
+      cx.fillStyle = col;
+      cx.fillText(LABELS[i] || '', 64, 34);
+      cx.beginPath(); cx.arc(64, 90, 17, 0, Math.PI * 2);
+      cx.fillStyle = 'rgba(255,255,255,0.95)'; cx.fill();
+      cx.beginPath(); cx.arc(64, 90, 12, 0, Math.PI * 2);
+      cx.fillStyle = col; cx.fill();
+      const pin = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: new THREE.CanvasTexture(cv), depthTest: false, transparent: true, sizeAttenuation: false }));
+      pin.scale.set(0.05, 0.05, 1);
+      pin.center.set(0.5, 1 - 90 / 128); // the dot, not the canvas centre, sits on the picked point
+      pin.renderOrder = 1252;
+      g.add(pin);
+      this._sectionMarkers.push(g);
+      this._mapGroup.add(g);
+    });
+    if (ends.length === 2) {
+      const pts = [];
+      for (let i = 0; i <= 60; i++) {
+        const f = i / 60;
+        const lon = ends[0].lon + (ends[1].lon - ends[0].lon) * f;
+        const lat = ends[0].lat + (ends[1].lat - ends[0].lat) * f;
+        const local = this._lonLatToLocalMeters(lon, lat, 120.7, 23.7);
+        pts.push(new THREE.Vector3(local.x, this.groundY(lon, lat) + 400, local.z));
+      }
+      const line = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(pts),
+        new THREE.LineBasicMaterial({ color: new THREE.Color('#1b3a6b'), depthTest: false, transparent: true }));
+      line.userData.noVertExag = true;
+      line.renderOrder = 1249;
+      const g = new THREE.Group();
+      g.add(line);
+      this._sectionMarkers.push(g);
+      this._mapGroup.add(g);
+    }
+  }
+
+  parseLonLat(text) {
+    const m = String(text || '').split(/[,\s]+/).map(Number).filter((v) => isFinite(v));
+    return m.length >= 2 ? { lon: m[0], lat: m[1] } : null;
+  }
+
+  async drawSection(opts) {
+    const keepScale = !!(opts && opts.keepScale);
+    const ends = this.state.sectionEnds || [];
+    const a = ends[0] || this.parseLonLat(this.state.secA);
+    const b = ends[1] || this.parseLonLat(this.state.secB);
+    if (!a || !b) {
+      this.showToast(this.L('請先指定剖面兩端點', 'Set both ends of the section first'));
+      return;
+    }
+    const mod = await this.waitGlobal('__crossSectionModule');
+    const lm = window.__landMaskModule ? window.__landMaskModule.LANDMASK : null;
+    const tab = this.state.mapTab || 'all';
+    const pool = this.domainFaults();
+    const faults = tab === 'local' ? pool.filter((f) => (this.state.localIds || []).includes(f.id)) : pool;
+    // On the first draw the panel has not mounted yet, so measure the map area instead of falling
+    // back to a fixed 1000px -- the panel spans it minus its own 16px insets and 8px padding.
+    const host = this._sectionHost;
+    const stageW = this._mapStage ? this._mapStage.clientWidth - 64 : 0;
+    const width = Math.max(420, Math.min(1400, host ? host.clientWidth - 16 : (stageW || 1000)));
+    const r = mod.renderSection({
+      a, b, faults, points: this.state.points || [],
+      dem: this._dem, bathy: this._bathy, landmask: lm,
+      corridorKm: Number(this.state.corridorKm) || 10,
+      vExag: Number(this.state.sectionVExag) || 1,
+      lang: this.state.lang, width,
+      depthMinKm: 10,
+      // a fresh section auto-fits the panel; edits to the exaggeration field keep what was typed
+      fitHeightPx: keepScale ? 0 : Math.max(180, Math.min(460, Math.round((this._mapStage ? this._mapStage.clientHeight : 900) * 0.32))),
+    });
+    this._sectionSvg = r.svg;
+    this.setState({
+      sectionOpen: true, sectionStats: r.stats, sectionEnds: [a, b],
+      sectionVExag: r.stats.vExag,
+      vExagField: String(r.stats.vExag),
+      exagNoticeDismissed: keepScale ? this.state.exagNoticeDismissed : false,
+    }, () => {
+      if (this._sectionHost) this._sectionHost.innerHTML = this._sectionSvg;
+      this.drawSectionMarkers();
+    });
+  }
+
+  /** Reads the panel's exaggeration / corridor fields and redraws if either really changed. */
+  applySectionScale() {
+    const v = parseFloat(this.state.vExagField);
+    const c = parseFloat(this.state.corridorField);
+    const vExag = isFinite(v) && v > 0 ? Math.min(20, v) : (this.state.sectionVExag || 1);
+    const corridorKm = isFinite(c) && c > 0 ? Math.min(200, c) : (this.state.corridorKm || 10);
+    const changed = vExag !== this.state.sectionVExag || corridorKm !== this.state.corridorKm;
+    this.setState({
+      sectionVExag: vExag, corridorKm,
+      vExagField: String(vExag), corridorField: String(corridorKm),
+    }, () => { if (changed && this.state.sectionOpen) this.drawSection({ keepScale: true }); });
+  }
+
+  closeSection() { this.setState({ sectionOpen: false }); }
+
+  clearSection() {
+    this._sectionSvg = null;
+    this.setState({ sectionOpen: false, sectionEnds: [], sectionPicking: false, secA: '', secB: '', sectionStats: null },
+      () => this.drawSectionMarkers());
+  }
+
+  async downloadSectionPng() {
+    if (!this._sectionSvg) return;
+    const mod = await this.waitGlobal('__crossSectionModule');
+    mod.downloadSectionPNG(this._sectionSvg, 'cross_section.png');
+  }
+
+  async downloadSectionSvg() {
+    if (!this._sectionSvg) return;
+    const mod = await this.waitGlobal('__crossSectionModule');
+    mod.downloadSectionSVG(this._sectionSvg, 'cross_section.svg');
+  }
+
+  slipCategory(f) {
+    // compound types (e.g. "SS/R") are classified by the LAST token: SS/R means reverse with a
+    // strike-slip component, so it counts as R. The offshore table writes strike-slip as RL
+    // (right-lateral) or LL (left-lateral), and hedges an uncertain component in parentheses
+    // ("R(LL?)") -- both collapse to the same three legend colours as the land faults.
+    const parts = String(f.type || '').replace(/\([^)]*\)/g, '').split('/')
+      .map((p) => p.trim().toUpperCase()).filter(Boolean);
+    const t = parts.length ? parts[parts.length - 1] : '';
+    if (t === 'SS' || t === 'RL' || t === 'LL') return 'SS';
+    if (t === 'N') return 'N';
+    if (t === 'R') return 'R';
+    return null;
+  }
+
+  /** World-space height of a fault's trace, for anchoring a screen label to it: land traces sit on
+   *  the DEM, offshore traces on the seabed. */
+  faultAnchorY(f, lon, lat) {
+    if (f.offshore) {
+      if (this._bathy && this._bathy.loaded) return Math.min(this._bathy.sample(lon, lat), 0);
+      return -(f.seabedKm || 0) * 1000;
+    }
+    return this._dem ? this._dem.sample(lon, lat) : 0;
+  }
+
+  /** The fault list the domain switch (onshore / all / offshore) currently admits. */
+  domainFaults() {
+    const all = this.state.faults || [];
+    const d = this.state.domain || 'land';
+    if (d === 'land') return all.filter((f) => !f.offshore);
+    if (d === 'sea') return all.filter((f) => f.offshore);
+    return all;
+  }
+
+  applyFaultColors() {
+    const groups = this._mapFaultGroups;
+    if (!groups) return;
+    const on = this.state.typeColors;
+    Object.entries(groups).forEach(([id, fg]) => {
+      const fault = this.getFault(id);
+      const cat = fault ? this.slipCategory(fault) : null;
+      const col = on && cat ? TYPE_COLOR[cat] : null;
+      fg.traverse((o) => {
+        if (!o.isMesh || !o.material) return;
+        if (o.userData.origColor === undefined) o.userData.origColor = o.material.color.getHex();
+        o.material.color.setHex(col !== null ? col : o.userData.origColor);
+      });
+    });
+  }
+
+  /** Vertical exaggeration for the whole scene: the ground surface and everything referenced to it
+   *  -- fault planes, offshore structures, the coastline/county overlay, trenches, hypocentres --
+   *  are stretched by the same factor, so a fault stays welded to the topography instead of the
+   *  ground pulling away from it. */
+  applyVertExag() {
+    const k = Number(this.state.vertExag) || 1;
+    [this._mapGroup].forEach((root) => {
+      if (!root) return;
+      root.scale.y = 1;
+      root.traverse((o) => {
+        const geo = o.geometry;
+        if (!geo || !geo.attributes || !geo.attributes.position) return;
+        // marker geometry is a shape centred on its own origin (sphere, sprite quad) or is rebuilt
+        // from scratch on every change -- stretching its vertices would deform the marker. Sprites
+        // in particular are a unit quad: scaling its Y squashed the trench labels.
+        if (o.userData.noVertExag || o.isSprite) return;
+        const pos = geo.attributes.position;
+        if (o.isMesh && o.userData.surfaceLayer) {
+          const base = o.userData.baseElev;
+          if (!base) return;
+          for (let i = 0; i < pos.count; i++) pos.setY(i, base[i] * k);
+        } else {
+          // snapshot the true elevations once, so repeated slider moves never compound
+          if (!o.userData.baseY || o.userData.baseY.length !== pos.count) {
+            const snap = new Float32Array(pos.count);
+            for (let i = 0; i < pos.count; i++) snap[i] = pos.getY(i);
+            o.userData.baseY = snap;
+          }
+          const base = o.userData.baseY;
+          for (let i = 0; i < pos.count; i++) pos.setY(i, base[i] * k);
+        }
+        pos.needsUpdate = true;
+        if (o.isMesh) geo.computeVertexNormals();
+        geo.computeBoundingSphere();
+      });
+      // sprites and other point-positioned children carry no geometry of their own
+      root.traverse((o) => {
+        if (o.isSprite || o.userData.trenchLabel) {
+          if (o.userData.baseYPos == null) o.userData.baseYPos = o.position.y;
+          o.position.y = o.userData.baseYPos * k;
+        }
+      });
+    });
+  }
+
+  applyTerrainOpacity() {
+    const op = Number(this.state.terrainOpacity);
+    const apply = (root) => {
+      if (!root) return;
+      root.traverse((o) => {
+        if (o.isMesh && o.userData.surfaceLayer) {
+          o.material.transparent = op < 0.999;
+          o.material.opacity = op;
+          // opaque (100%) must write depth so it can occlude the fault planes underneath;
+          // once translucent it drops depth-write so terrainOpacity blends over them instead
+          o.material.depthWrite = op >= 0.999;
+          o.material.needsUpdate = true;
+        }
+      });
+    };
+    apply(this._mapGroup);
+  }
+
+  applyTrenchOverlay() {
+    const show = this.state.showTrench !== false;
+    if (!this._mapGroup) return;
+    this._mapGroup.traverse((o) => {
+      if (o.name === 'Taiwan_trench' || o.name === 'Taiwan_slab_surface') o.visible = show;
+    });
+  }
+
+  applyCountyOverlay() {
+    const showCounty = this.state.lineSource === 'county';
+    const apply = (root) => {
+      if (!root) return;
+      root.traverse((o) => {
+        if (o.name === 'Taiwan_coastline') o.visible = !showCounty;
+        if (o.name === 'Taiwan_countyBoundary') o.visible = showCounty;
+      });
+    };
+    apply(this._mapGroup);
+  }
+
+  _accentToHex(oklchStr) {
+    if (!this._accentProbe) { this._accentProbe = document.createElement('div'); this._accentProbe.style.display = 'none'; document.body.appendChild(this._accentProbe); }
+    this._accentProbe.style.color = oklchStr;
+    const rgb = getComputedStyle(this._accentProbe).color.match(/\d+/g);
+    if (!rgb) return 0xe0722f;
+    return (parseInt(rgb[0]) << 16) | (parseInt(rgb[1]) << 8) | parseInt(rgb[2]);
+  }
+
+  refitStage() {
+    setTimeout(() => { if (this._stage && this._stage.refit) this._stage.refit(); }, 0);
+    setTimeout(() => { if (this._stage && this._stage.refit) this._stage.refit(); }, 150);
+  }
+
+  async initStage() {
+    if (!window.__unhandledRejLogged) {
+      window.__unhandledRejLogged = true;
+      window.addEventListener('unhandledrejection', (e) => {
+        const r = e.reason;
+        console.warn('unhandledrejection:', r && (r.message || r.stack) || r);
+      });
+    }
+    const stage = document.getElementById('fault-3d-stage');
+    const mapStage = document.getElementById('fault-map-3d-stage');
+    if (!stage || !mapStage) return;
+    let THREE;
+    try {
+      ({ THREE } = await stage.ready);
+    } catch (e) {
+      console.error('stage.ready failed:', (e && (e.message || e.stack)) || e);
+      return;
+    }
+    this._THREE = THREE;
+    this._stage = stage;
+    if (this.state.currentPage === 'detail') this.refitStage();
+
+    let loadDEM, geometry;
+    try {
+      [{ loadDEM }, geometry] = await Promise.all([
+        this.waitGlobal('__demModule'),
+        this.waitGlobal('__faultGeometryModule'),
+        mapStage.ready,
+      ]);
+    } catch (e) {
+      console.error('mapStage.ready failed:', (e && (e.message || e.stack)) || e);
+      return;
+    }
+    this._buildFaultGroup = geometry.buildFaultGroup;
+    this._buildOffshoreFaultGroup = geometry.buildOffshoreFaultGroup;
+    this._buildTaiwanMap = geometry.buildTaiwanMap;
+    this._setTopDownView = geometry.setTopDownView;
+    this._fitFaultsToView = geometry.fitFaultsToView;
+    this._lonLatToLocalMeters = geometry.lonLatToLocalMeters;
+    this._mapStage = mapStage;
+    if (!this._overlayTimer) this._overlayTimer = setInterval(() => { this.updateMapOverlays(); this.updateDetailOverlays(); }, 150);
+    try {
+      this._dem = await loadDEM();
+    } catch (e) {
+      this._dem = null;
+      console.error('DEM load failed:', (e && (e.message || e.type)) || e);
+    }
+    this.buildModel();
+    if (this.state.currentPage === 'detail') this.refitStage();
+    await this.buildMap();
+    if (this.state.currentPage === 'map') {
+      setTimeout(() => { if (mapStage.refit) mapStage.refit(); }, 150);
+    }
+  }
+
+  screenProjector(stage) {
+    const THREE = this._THREE;
+    const cam = stage._camera;
+    const rect = stage.getBoundingClientRect();
+    if (!cam || !rect.width || !rect.height) return null;
+    return {
+      rect,
+      toScreen: (v) => {
+        const p = v.clone().project(cam);
+        return { x: (p.x * 0.5 + 0.5) * rect.width, y: (-p.y * 0.5 + 0.5) * rect.height };
+      },
+    };
+  }
+
+  updateMapOverlays() {
+    const stage = this._mapStage, THREE = this._THREE;
+    if (!stage || !THREE || !stage._camera || !stage._controls || this.state.currentPage !== 'map') return;
+    const proj = this.screenProjector(stage);
+    if (!proj) return;
+    const { toScreen } = proj;
+    const controls = stage._controls, target = controls.target;
+    const p0 = toScreen(target);
+    const north = toScreen(target.clone().add(new THREE.Vector3(0, 0, -1000)));
+    const east = toScreen(target.clone().add(new THREE.Vector3(1000, 0, 0)));
+    const compassDeg = Math.atan2(north.x - p0.x, -(north.y - p0.y)) * 180 / Math.PI;
+    const pxPer1000 = Math.hypot(east.x - p0.x, east.y - p0.y) || 1;
+    const metersPerPixel = 1000 / pxPer1000;
+    const nice = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000, 1000000];
+    let chosen = nice[0];
+    for (const n of nice) { if (n / metersPerPixel <= 160) chosen = n; else break; }
+    const widthPx = Math.max(20, chosen / metersPerPixel);
+    const label = chosen >= 1000 ? (chosen / 1000) + ' km' : chosen + ' m';
+
+    const next = {};
+    if (Math.abs((this.state.compassDeg || 0) - compassDeg) > 0.5) next.compassDeg = compassDeg;
+    if (this.state.scaleBarLabel !== label) next.scaleBarLabel = label;
+    if (Math.abs((this.state.scaleBarWidthPx || 0) - widthPx) > 1) next.scaleBarWidthPx = widthPx;
+    if (Object.keys(next).length) this.setState(next);
+
+    if (this.state.labelMode !== 'none' && metersPerPixel <= 800) {
+      const tab = this.state.mapTab || 'all';
+      const allFaults = this.domainFaults();
+      const shown = tab === 'local' ? allFaults.filter(f => (this.state.localIds || []).includes(f.id)) : allFaults;
+      const raw = shown.map((f) => {
+        // offshore structures carry `parts` (several strands) rather than a single `coords` line;
+        // reading only `coords` dropped every one of them, so the label mode looked land-only
+        const coords = (f.coords && f.coords.length ? f.coords : (f.parts || []).flat()) || [];
+        if (!coords.length || !this._lonLatToLocalMeters) return null;
+        const [lon, lat] = coords[Math.floor(coords.length / 2)];
+        const local = this._lonLatToLocalMeters(lon, lat, 120.7, 23.7);
+        const y = this.faultAnchorY(f, lon, lat);
+        const s = toScreen(new THREE.Vector3(local.x, y, local.z));
+        return { id: f.id, num: f.num, name: this.faultName(f), x: s.x, y: s.y };
+      }).filter(Boolean);
+      this.setState({ mapLabels: this.declutterLabels(raw, this.state.labelMode) });
+    } else if (this.state.mapLabels && this.state.mapLabels.length) {
+      this.setState({ mapLabels: [] });
+    }
+  }
+
+  /** Screen-space label declutter: keep each label's anchor on its fault trace, but nudge the
+   *  box to the nearest free slot (spiral search) so labels never cover one another at any
+   *  camera angle. Displaced labels get a leader line back to their anchor. */
+  /** Measured pixel width of a name label's text, using the same font as the rendered badge. */
+  measureLabelText(text) {
+    if (!this._labelCtx) {
+      const c = document.createElement('canvas');
+      this._labelCtx = c.getContext('2d');
+    }
+    this._labelCtx.font = '700 10px "Noto Sans TC", sans-serif';
+    return this._labelCtx.measureText(text || '').width;
+  }
+
+  declutterLabels(items, mode) {
+    const isNum = mode === 'number';
+    const cands = [[0, 0]];
+    for (let r = 1; r <= 7; r++) {
+      const d = r * 12;
+      cands.push([0, -d], [0, d], [d * 1.6, 0], [-d * 1.6, 0], [d * 1.2, -d], [-d * 1.2, -d], [d * 1.2, d], [-d * 1.2, d]);
+    }
+    const placed = [];
+    const hits = (a, b) => Math.abs(a.cx - b.cx) < (a.w + b.w) / 2 + 3 && Math.abs(a.cy - b.cy) < (a.h + b.h) / 2 + 3;
+    // Ordered by fault number, NOT by screen position: sorting by y meant that orbiting the camera
+    // reordered the queue, so labels kept swapping slots with each other and the whole set shivered.
+    // A camera-independent order makes each label's slot depend only on its neighbours' geometry.
+    const sorted = items.slice().sort((a, b) => (a.num - b.num) || String(a.id).localeCompare(String(b.id)));
+    // Hysteresis: last frame's offset is tried first, so a label only moves when its current slot
+    // has actually become occupied -- otherwise it holds still through small camera changes.
+    if (!this._labelOffsets) this._labelOffsets = {};
+    const prev = this._labelOffsets;
+    const out = [];
+    for (const it of sorted) {
+      const w = isNum ? 19 : this.measureLabelText(it.name) + 12;
+      const h = isNum ? 19 : 19;
+      let box = null, off = [0, 0];
+      const tryList = prev[it.id] ? [prev[it.id], ...cands] : cands;
+      for (const c of tryList) {
+        const test = { cx: it.x + c[0], cy: it.y + c[1], w, h };
+        if (!placed.some((p) => hits(test, p))) { box = test; off = c; break; }
+      }
+      if (!box) { box = { cx: it.x, cy: it.y, w, h }; off = [0, 0]; }
+      prev[it.id] = off;
+      placed.push(box);
+      const dist = Math.hypot(off[0], off[1]);
+      // leader runs from just outside the badge to the anchor dot, so no gap and no hidden stub
+      const inset = isNum ? 10 : 9;
+      const ux = dist ? -off[0] / dist : 0, uy = dist ? -off[1] / dist : 0;
+      out.push({
+        // rounded to whole pixels: subpixel positions re-rendered every frame read as shimmer
+        id: it.id, num: it.num, name: it.name, x: Math.round(box.cx), y: Math.round(box.cy),
+        ax: Math.round(it.x), ay: Math.round(it.y),
+        leader: dist > 6,
+        leaderX: Math.round(box.cx + ux * inset),
+        leaderY: Math.round(box.cy + uy * inset),
+        leaderLen: Math.max(0, dist - inset),
+        leaderDeg: Math.atan2(-off[1], -off[0]) * 180 / Math.PI,
+      });
+    }
+    return out.sort((a, b) => a.num - b.num);
+  }
+
+  /** Compass + scale bar + true-depth ruler for the single-fault detail view. The ruler tracks
+   *  the fault block's own screen-space left edge (not a fixed panel position) so it reads like
+   *  a ruler held up against the model, and always uses real (non-exaggerated) depth. */
+  updateDetailOverlays() {
+    const stage = this._stage, THREE = this._THREE, group = this._faultGroup;
+    if (!stage || !THREE || !stage._camera || !stage._controls || this.state.currentPage !== 'detail' || !group || !group.userData.depthAnchor) return;
+    const proj = this.screenProjector(stage);
+    if (!proj) return;
+    const { toScreen } = proj;
+    const target = stage._controls.target;
+    const p0 = toScreen(target);
+    const north = toScreen(target.clone().add(new THREE.Vector3(0, 0, -1000)));
+    const east = toScreen(target.clone().add(new THREE.Vector3(1000, 0, 0)));
+    const compassDeg = Math.atan2(north.x - p0.x, -(north.y - p0.y)) * 180 / Math.PI;
+    const pxPer1000 = Math.hypot(east.x - p0.x, east.y - p0.y) || 1;
+    const metersPerPixel = 1000 / pxPer1000;
+    const nice = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000];
+    let chosen = nice[0];
+    for (const n of nice) { if (n / metersPerPixel <= 140) chosen = n; else break; }
+    const widthPx = Math.max(20, chosen / metersPerPixel);
+    const label = chosen >= 1000 ? (chosen / 1000) + ' km' : chosen + ' m';
+
+    const anchor = group.userData.depthAnchor;
+    const maxDepthKm = group.userData.maxDepthKm || 0;
+    const topPt = toScreen(anchor);
+    const upPt = toScreen(anchor.clone().add(new THREE.Vector3(0, 1000, 0)));
+    const pxPerKm = Math.abs(topPt.y - upPt.y) || 1;
+    const dNice = [1, 2, 5, 10, 20, 50];
+    let dStep = dNice[dNice.length - 1];
+    for (const n of dNice) { if (maxDepthKm / n <= 4) { dStep = n; break; } }
+    const depthTicks = [];
+    for (let d = dStep; d <= maxDepthKm + 0.01; d += dStep) {
+      depthTicks.push({ label: (Math.round(d * 10) / 10) + ' km', offsetPx: Math.round(d * pxPerKm) });
+    }
+
+    const next = {};
+    if (Math.abs((this.state.detailCompassDeg || 0) - compassDeg) > 0.5) next.detailCompassDeg = compassDeg;
+    if (this.state.detailScaleBarLabel !== label) next.detailScaleBarLabel = label;
+    if (Math.abs((this.state.detailScaleBarWidthPx || 0) - widthPx) > 1) next.detailScaleBarWidthPx = widthPx;
+    const rulerHeight = maxDepthKm * pxPerKm;
+    if (Math.abs((this.state.rulerHeightPx || 0) - rulerHeight) > 1) next.rulerHeightPx = rulerHeight;
+    if (JSON.stringify(this.state.depthTicks || []) !== JSON.stringify(depthTicks)) next.depthTicks = depthTicks;
+    if (Object.keys(next).length) this.setState(next);
+  }
+
+  /** Faults whose trace is currently inside the map viewport, in list order. */
+  visibleMapFaults() {
+    const stage = this._mapStage, THREE = this._THREE;
+    if (!stage || !THREE || !stage._camera || !this._lonLatToLocalMeters) return [];
+    const cam = stage._camera;
+    const exag = Number(this.state.vertExag) || 1;
+    const tab = this.state.mapTab || 'all';
+    const all = this.domainFaults();
+    const shown = tab === 'local' ? all.filter(f => (this.state.localIds || []).includes(f.id)) : all;
+    return shown.filter((f) => {
+      const coords = f.coords || [];
+      const step = Math.max(1, Math.ceil(coords.length / 24));
+      for (let i = 0; i < coords.length; i += step) {
+        const [lon, lat] = coords[i];
+        const local = this._lonLatToLocalMeters(lon, lat, 120.7, 23.7);
+        const y = this.faultAnchorY(f, lon, lat);
+        const p = new THREE.Vector3(local.x, y, local.z).project(cam);
+        if (p.z > -1 && p.z < 1 && p.x > -1 && p.x < 1 && p.y > -1 && p.y < 1) return true;
+      }
+      return false;
+    });
+  }
+
+  /* ---------- coordinate query point ---------- */
+
+  locateQueryPoint() {
+    const lon = parseFloat(this.state.qLon), lat = parseFloat(this.state.qLat);
+    const depth = this.state.qDepth === '' ? 0 : parseFloat(this.state.qDepth);
+    if (isNaN(lon) || isNaN(lat)) { this.showToast(this.L('請輸入有效的經度與緯度。', 'Enter a valid longitude and latitude.')); return; }
+    if (lon < 118 || lon > 123 || lat < 21 || lat > 26) { this.showToast(this.L('座標超出台灣範圍。', 'Coordinate is outside Taiwan.')); return; }
+    if (isNaN(depth) || depth < 0) { this.showToast(this.L('深度需為 0 或正數。', 'Depth must be 0 or positive.')); return; }
+    this.setState({ queryPoints: [...(this.state.queryPoints || []), { lon, lat, depth, color: QUERY_POINT_COLORS[(this.state.queryPoints || []).length % QUERY_POINT_COLORS.length] }], currentPage: 'map' }, () => {
+      this.drawQueryPoints();
+      this.focusQueryPoint(this.state.queryPoints[this.state.queryPoints.length - 1]);
+    });
+  }
+
+  clearQueryPoint() {
+    this.setState({ queryPoints: [] }, () => this.drawQueryPoints());
+  }
+
+  drawQueryPoints() {
+    const THREE = this._THREE;
+    if (!THREE || !this._mapGroup) return;
+    if (this._queryMarkers) {
+      this._queryMarkers.forEach((g) => {
+        this._mapGroup.remove(g);
+        g.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+      });
+    }
+    this._queryMarkers = [];
+    const pts = this.state.queryPoints || [];
+    if (!pts.length || !this._lonLatToLocalMeters) return;
+    pts.forEach((qp) => {
+      const local = this._lonLatToLocalMeters(qp.lon, qp.lat, 120.7, 23.7);
+      // groundY already carries the exaggeration; the depth below it must too, or the marker
+      // detaches from the surface it is planted on
+      const kExag = Number(this.state.vertExag) || 1;
+      const surfY = this.groundY(qp.lon, qp.lat);
+      const y = surfY - qp.depth * 1000 * kExag;
+      const colorNum = parseInt(qp.color.slice(1), 16);
+      const g = new THREE.Group();
+      g.name = 'query_point';
+      const sph = new THREE.Mesh(
+        new THREE.SphereGeometry(Number(this.state.markerRadius) || 700, 20, 16),
+        new THREE.MeshBasicMaterial({ color: colorNum, depthTest: false, transparent: true, opacity: 0.95 })
+      );
+      sph.position.set(local.x, y, local.z);
+      sph.userData.noVertExag = true;
+      sph.renderOrder = 1200;
+      g.add(sph);
+      const lineGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(local.x, surfY + 2000, local.z),
+        new THREE.Vector3(local.x, y, local.z),
+      ]);
+      const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: colorNum, depthTest: false, transparent: true, opacity: 0.9 }));
+      line.userData.noVertExag = true;
+      line.renderOrder = 1200;
+      g.add(line);
+      this._queryMarkers.push(g);
+      this._mapGroup.add(g);
+    });
+  }
+
+  focusQueryPoint(qp) {
+    const stage = this._mapStage, THREE = this._THREE;
+    if (!qp || !stage || !THREE || !stage._camera || !stage._controls) return;
+    const local = this._lonLatToLocalMeters(qp.lon, qp.lat, 120.7, 23.7);
+    const surfY = this.groundY(qp.lon, qp.lat);
+    const cam = stage._camera, controls = stage._controls;
+    const dist = 60000;
+    controls.target.set(local.x, surfY, local.z);
+    cam.up.set(0, 1, 0);
+    cam.position.set(local.x, surfY + dist, local.z + dist * 0.02);
+    cam.lookAt(controls.target);
+    controls.update();
+  }
+
+  openJpgDialog() {
+    this.setState({
+      jpgDialogOpen: true,
+      jpgCompass: true,
+      jpgScale: true,
+      jpgLegend: this.state.labelMode === 'number',
+    });
+  }
+
+  /** JPG of the live map, with the chosen overlays drawn in. */
+  async exportMapJpg() {
+    const stage = this._mapStage, THREE = this._THREE;
+    if (!stage || !stage._renderer || !stage._camera || !stage._scene) return;
+    stage._renderer.render(stage._scene, stage._camera);
+    const src = stage._renderer.domElement;
+    const rect = stage.getBoundingClientRect();
+    const w = src.width, h = src.height;
+    const k = w / (rect.width || 1);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#f3eee4';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(src, 0, 0, w, h);
+
+    const roundRect = (x, y, rw, rh, r) => {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + rw, y, x + rw, y + rh, r);
+      ctx.arcTo(x + rw, y + rh, x, y + rh, r);
+      ctx.arcTo(x, y + rh, x, y, r);
+      ctx.arcTo(x, y, x + rw, y, r);
+      ctx.closePath();
+    };
+
+    const opts = { compass: this.state.jpgCompass, scale: this.state.jpgScale, legend: this.state.jpgLegend };
+    const T = STRINGS[this.state.lang] || STRINGS.zh;
+
+    const mode = this.state.labelMode;
+    if (mode !== 'none') {
+      (this.state.mapLabels || []).forEach((lb) => {
+        if (!lb.leader) return;
+        ctx.strokeStyle = 'rgba(20,20,25,0.5)';
+        ctx.lineWidth = Math.max(1, k);
+        ctx.beginPath();
+        ctx.moveTo(lb.x * k, lb.y * k);
+        ctx.lineTo(lb.ax * k, lb.ay * k);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(20,20,25,0.6)';
+        ctx.beginPath();
+        ctx.arc(lb.ax * k, lb.ay * k, 2 * k, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      (this.state.mapLabels || []).forEach((lb) => {
+        const cx = lb.x * k, cy = lb.y * k;
+        ctx.fillStyle = 'rgba(20,20,25,0.8)';
+        if (mode === 'number') {
+          ctx.beginPath();
+          ctx.arc(cx, cy, 9.5 * k, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'white';
+          ctx.font = '800 ' + (10 * k) + 'px "Noto Sans TC", sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(String(lb.num), cx, cy + 0.5 * k);
+        } else {
+          ctx.font = '700 ' + (10 * k) + 'px "Noto Sans TC", sans-serif';
+          const tw = ctx.measureText(lb.name).width;
+          const bw = tw + 12 * k, bh = 16 * k;
+          roundRect(cx - bw / 2, cy - bh / 2, bw, bh, 6 * k);
+          ctx.fill();
+          ctx.fillStyle = 'white';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(lb.name, cx, cy + 0.5 * k);
+        }
+      });
+    }
+
+    if (opts.legend) {
+      const entries = (this.state.mapLabels || []).slice().sort((a, b) => a.num - b.num);
+      if (entries.length) {
+        const fs = 11 * k, lineH = 15 * k, pad = 10 * k, titleH = 16 * k;
+        const rowsPerCol = Math.max(4, Math.floor((h * 0.62) / lineH));
+        const cols = Math.ceil(entries.length / rowsPerCol);
+        ctx.font = '600 ' + fs + 'px "Noto Sans TC", sans-serif';
+        const colWidths = [];
+        for (let c = 0; c < cols; c++) {
+          let mw = 0;
+          entries.slice(c * rowsPerCol, (c + 1) * rowsPerCol).forEach((e) => {
+            mw = Math.max(mw, ctx.measureText(e.num + '  ' + e.name).width);
+          });
+          colWidths.push(mw);
+        }
+        const colGap = 16 * k;
+        const rows = Math.min(entries.length, rowsPerCol);
+        const boxW = colWidths.reduce((a, b) => a + b, 0) + colGap * (cols - 1) + pad * 2;
+        const boxH = titleH + rows * lineH + pad * 2;
+        const lx = 16 * k, ly = h - 16 * k - boxH;
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        roundRect(lx, ly, boxW, boxH, 8 * k); ctx.fill();
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '700 ' + (10.5 * k) + 'px "Noto Sans TC", sans-serif';
+        ctx.fillText(T.legendTitle, lx + pad, ly + pad);
+        ctx.font = '600 ' + fs + 'px "Noto Sans TC", sans-serif';
+        let cx0 = lx + pad;
+        for (let c = 0; c < cols; c++) {
+          entries.slice(c * rowsPerCol, (c + 1) * rowsPerCol).forEach((e, i) => {
+            const ty = ly + pad + titleH + i * lineH;
+            ctx.fillStyle = '#e0722f';
+            ctx.fillText(String(e.num), cx0, ty);
+            ctx.fillStyle = 'white';
+            ctx.fillText(e.name, cx0 + ctx.measureText(e.num + '  ').width, ty);
+          });
+          cx0 += colWidths[c] + colGap;
+        }
+      }
+    }
+
+    if (opts.compass) {
+      // same drawing as the on-screen SVG compass (64-unit viewBox), so the export matches the map
+      const cSize = 58 * k, cx = w - 16 * k - cSize / 2, cy = 16 * k + cSize / 2;
+      const u = cSize / 64;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate((this.state.compassDeg || 0) * Math.PI / 180);
+      ctx.scale(u, u);
+      ctx.translate(-32, -32);
+      ctx.shadowColor = 'rgba(20,30,50,0.28)'; ctx.shadowBlur = 3 / u * k; ctx.shadowOffsetY = 1 / u * k;
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath(); ctx.arc(32, 32, 30, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.strokeStyle = 'rgba(27,58,107,0.45)'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = 'rgba(27,58,107,0.22)'; ctx.lineWidth = 0.75;
+      ctx.beginPath(); ctx.arc(32, 32, 23.5, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(27,58,107,0.5)'; ctx.lineWidth = 0.9;
+      ctx.stroke(new Path2D('M45 9.48L46.5 6.89M54.52 19L57.11 17.5M54.52 45L57.11 46.5M45 54.52L46.5 57.11M19 54.52L17.5 57.11M9.48 45L6.89 46.5M9.48 19L6.89 17.5M19 9.48L17.5 6.89'));
+      ctx.strokeStyle = 'rgba(27,58,107,0.75)'; ctx.lineWidth = 1.4;
+      ctx.stroke(new Path2D('M57 32H61M32 57V61M7 32H3'));
+      [['M32 16L37 32H32Z', '#1b3a6b'], ['M32 16L27 32H32Z', '#3d6aa8'],
+       ['M32 48L37 32H32Z', '#c9d1dc'], ['M32 48L27 32H32Z', '#ffffff']].forEach(([d, c]) => {
+        ctx.fillStyle = c; ctx.fill(new Path2D(d));
+      });
+      ctx.lineJoin = 'round'; ctx.strokeStyle = '#1b3a6b'; ctx.lineWidth = 0.8;
+      ctx.stroke(new Path2D('M32 16L37 32L32 48L27 32Z'));
+      ctx.beginPath(); ctx.arc(32, 32, 1.7, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1b3a6b';
+      ctx.font = '800 8.5px system-ui, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      ctx.fillText('N', 32, 13.2);
+      ctx.restore();
+    }
+
+    if (opts.scale) {
+      const barW = (this.state.scaleBarWidthPx || 80) * k;
+      const label = this.state.scaleBarLabel || '';
+      ctx.font = '600 ' + (11 * k) + 'px "Noto Sans TC", sans-serif';
+      const lw = ctx.measureText(label).width;
+      const boxW = Math.max(barW, lw) + 20 * k, boxH = 36 * k;
+      const bx = w - 16 * k - boxW, by = h - 16 * k - boxH;
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      roundRect(bx, by, boxW, boxH, 6 * k); ctx.fill();
+      const barX = bx + (boxW - barW) / 2, barY = by + 10 * k;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(barX, barY, barW, 3 * k);
+      ctx.fillRect(barX, barY - 4 * k, Math.max(1, k), 8 * k);
+      ctx.fillRect(barX + barW - Math.max(1, k), barY - 4 * k, Math.max(1, k), 8 * k);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(label, bx + boxW / 2, barY + 8 * k);
+    }
+
+    const names = this.visibleMapFaults().map(f => this.faultName(f));
+    const joiner = this.state.lang === 'en' ? ', ' : '、';
+    let base = names.length ? names.join(joiner) : this.L('台灣活動斷層地圖', 'Taiwan active fault map');
+    if (names.length > 8) base = names.slice(0, 8).join(joiner) + this.L('等' + names.length + '條', ' and ' + (names.length - 8) + ' more');
+    if (base.length > 160) base = base.slice(0, 160);
+    const blob = await new Promise((res) => canvas.toBlob(res, 'image/jpeg', 0.95));
+    if (!blob) { this.showToast(this.L('截圖失敗，請再試一次', 'Capture failed, please try again')); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = base + '.jpg';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    this.showToast(this.L('已匯出：', 'Exported: ') + base + '.jpg');
+  }
+
+  async buildMap() {
+    if (!this._dem || !this._buildTaiwanMap || !this._mapStage) return;
+    if (this._mapStage._controls) {
+      this._mapStage._controls.mouseButtons = {
+        LEFT: this._THREE.MOUSE.PAN,
+        MIDDLE: this._THREE.MOUSE.ROTATE,
+        RIGHT: -1, // reserved for section picking; zoom stays on the wheel
+      };
+      this._mapStage._controls.minPolarAngle = 0.01;
+      this._mapStage._controls.maxPolarAngle = Math.PI - 0.01;
+    }
+    const tab = this.state.mapTab || 'all';
+    const allFaults = this.domainFaults();
+    const shown = tab === 'local' ? allFaults.filter(f => (this.state.localIds || []).includes(f.id)) : allFaults;
+    const { group, faultGroups } = this._buildTaiwanMap(this._THREE, this._dem, shown, 120.7, 23.7, this.mapBuildOpts());
+    this._mapFaultGroups = faultGroups;
+    this._mapGroup = group;
+    this._mapStage.setObject(group);
+    if (tab === 'local' && shown.length) {
+      this._fitFaultsToView(this._THREE, this._mapStage, shown);
+    } else {
+      this._setTopDownView(this._mapStage, this.mapViewRadius(), this.mapViewCenter());
+    }
+    this.applyFaultColors();
+    this.applyVertExag();
+    this.applyTerrainOpacity();
+    this.applyCountyOverlay();
+    this.applyTrenchOverlay();
+    this.drawQueryPoints();
+    this.applyPointCloud();
+    this.drawSectionMarkers();
+    this.bindSectionPick();
+    if (this._mapStage.refit) this._mapStage.refit();
+    setTimeout(() => { if (this._mapStage.refit) this._mapStage.refit(); }, 150);
+  }
+
+  /** Raycast a click on the main map to lon/lat, for picking section ends. Bound once per stage;
+   *  the handler is a no-op unless pick mode is on, so it never interferes with orbiting. */
+  bindSectionPick() {
+    const stage = this._mapStage;
+    if (!stage) return;
+    // The guard lives on the ELEMENT, not on the component: a remount gives a fresh component whose
+    // own flag would be empty, and re-binding would leave two live listeners on the same stage --
+    // which is exactly how one right-click ended up planting both A and B. Re-pointing `owner`
+    // keeps the existing listener talking to the current component.
+    if (stage.__omSectionPick) { stage.__omSectionPick.owner = this; return; }
+    const ref = { owner: this };
+    stage.__omSectionPick = ref;
+    const THREE = this._THREE;
+    const ray = new THREE.Raycaster();
+    // Right-click picks (the right button is unbound in OrbitControls for this reason). Left-drag
+    // stays free for panning, so no mode toggle is needed. A right-drag is still ignored.
+    let rightAt = null;
+    stage.addEventListener('pointerdown', (ev) => {
+      if (ev.button === 2) rightAt = { x: ev.clientX, y: ev.clientY };
+    });
+    stage.addEventListener('contextmenu', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (rightAt && Math.hypot(ev.clientX - rightAt.x, ev.clientY - rightAt.y) > 5) { rightAt = null; return; }
+      rightAt = null;
+      const self = ref.owner;
+      // picking is only live on the 新增 tab, so an ordinary right-click elsewhere never moves a
+      // section end by accident
+      if (self.state.sidePage !== 'add') return;
+      // a duplicate event from the same physical click carries the same timeStamp
+      if (ref.lastTs === ev.timeStamp) return;
+      ref.lastTs = ev.timeStamp;
+      // measure the canvas, not the host: the custom element itself can report a zero-size box
+      const canvas = stage.querySelector('canvas') || (stage.shadowRoot && stage.shadowRoot.querySelector('canvas'));
+      const rect = (canvas || stage).getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const ndc = new THREE.Vector2(
+        ((ev.clientX - rect.left) / rect.width) * 2 - 1,
+        -((ev.clientY - rect.top) / rect.height) * 2 + 1);
+      const cam = stage._camera;
+      if (!cam || !self._mapGroup) return;
+      ray.setFromCamera(ndc, cam);
+      const surfaces = [];
+      self._mapGroup.traverse((o) => { if (o.isMesh && o.userData.surfaceLayer) surfaces.push(o); });
+      const hit = ray.intersectObjects(surfaces, false)[0];
+      if (!hit) return;
+      // invert lonLatToLocalMeters about the map origin
+      const lat = 23.7 - hit.point.z / (111132.92 - 559.82 * Math.cos(2 * 23.7 * Math.PI / 180));
+      const lon = 120.7 + hit.point.x / (111320 * Math.cos(23.7 * Math.PI / 180));
+      self.addSectionEnd(lon, lat);
+    });
+  }
+
+  /* ---------- export page: pick faults on a map ---------- */
+
+  /** Bathymetry options for buildTaiwanMap. The seabed backdrop is now built out to the full grid in
+   *  every domain, so the map looks the same whichever domain is showing; what the domain changes is
+   *  the camera distance (see mapViewRadius). */
+  mapBuildOpts() {
+    const bathy = this._bathy && this._bathy.loaded ? this._bathy : null;
+    const extra = { lang: this.state.lang, showTrench: this.state.showTrench !== false };
+    return bathy ? { bathy, ...extra } : extra;
+  }
+
+  /** Half-width the top-down camera should frame, in metres, per domain, plus the point it should
+   *  centre on. Onshore centres on Taiwan itself; the two offshore modes centre on the middle of the
+   *  bathymetry grid, since the 55 structures spread west and south of the island -- centring those
+   *  on Taiwan pushed the whole map off to one side of the viewport. */
+  mapViewRadius() {
+    if (!(this._bathy && this._bathy.loaded)) return null; // no wide backdrop: keep the stage's own fit
+    return (this.state.domain || 'land') === 'land' ? 260000 : 440000;
+  }
+
+  mapViewCenter() {
+    if (!(this._bathy && this._bathy.loaded)) return null;
+    if ((this.state.domain || 'land') === 'land') return null; // origin, i.e. 120.7 / 23.7
+    if (!this._lonLatToLocalMeters) return null;
+    const ex = this._bathy.extent;
+    const c = this._lonLatToLocalMeters(
+      (ex.lonMin + ex.lonMax) / 2, (ex.latMin + ex.latMax) / 2, 120.7, 23.7);
+    return { x: c.x, z: c.z };
+  }
+
+  buildModel() {
+    if (!this._THREE || !this._stage || !this._dem || !this._buildFaultGroup) return;
+    const fault = this.getFault(this.state.selectedFaultId);
+    if (!fault) return;
+    if (fault.offshore) {
+      if (!this._buildOffshoreFaultGroup || !(fault.parts && fault.parts.length)) return;
+      const g = this._buildOffshoreFaultGroup(this._THREE, this._bathy, fault);
+      this._faultGroup = g;
+      this._stage.setObject(g);
+      this.refitStage();
+      return;
+    }
+    if (!fault.coords) return;
+    const group = this._buildFaultGroup(this._THREE, this._dem, fault);
+    this._faultGroup = group;
+    this._stage.setObject(group);
+  }
+
+  getFault(id) { return (this.state.faults || []).find(f => f.id === id); }
+
+  showToast(msg) {
+    this.setState({ toast: msg });
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => this.setState({ toast: null }), 2200);
+  }
+
+  /** Build the download for the current cart and format. */
+  async runExport() {
+    const cart = this.state.cart || [];
+    if (!cart.length) {
+      this.showToast(this.L('請先在地圖上選取至少一個斷層', 'Select at least one fault on the map first'));
+      return;
+    }
+    try {
+      const { exportFaults } = await this.waitGlobal('__faultExportModule');
+      const faults = cart.map((id) => this.getFault(id)).filter(Boolean);
+      const r = exportFaults(faults, {
+        format: this.state.cartFormat || 'all',
+        contourKm: this.state.contourKm ?? 2,
+        dem: this._dem,
+        bathy: this._bathy,
+        temMag: (f) => this.temMagnitude(f),
+        slipEn: (f) => f.slipTypeEn || SLIP_EN[f.slipType] || f.slipType || '',
+      });
+      this.showToast(this.L(
+        '已匯出 ' + r.faultCount + ' 個斷層，共 ' + r.fileCount + ' 個檔案：' + r.name,
+        'Exported ' + r.faultCount + ' faults in ' + r.fileCount + ' files: ' + r.name));
+    } catch (err) {
+      console.error(err);
+      this.showToast(this.L('匯出失敗，請再試一次', 'Export failed, please try again'));
+    }
+  }
+
+  toggleCart(id) {
+    this.setState(s => ({ cart: s.cart.includes(id) ? s.cart.filter(x => x !== id) : [...s.cart, id] }));
+  }
+
+  toggleLocal(id) {
+    this.setState(s => {
+      const cur = s.localIds || [];
+      return { localIds: cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id] };
+    });
+  }
+
+  renderVals() {
+    const accent = this.props.primaryAccent || 'oklch(68% 0.16 55)';
+    const lang = this.state.lang;
+    const t = STRINGS[lang] || STRINGS.zh;
+    const L = (zh, en) => this.L(zh, en);
+    const faults = this.state.faults || [];
+    const currentFault = this.getFault(this.state.selectedFaultId) || { name: '', nameE: '', desc: '', dip: '', dipDir: '', activity: '', lat: '', lon: '', depthKm: 0, strike: '', lengthKm: '', slipType: '', type: '' };
+    const isMobile = this.state.isMobile;
+    const page = (name) => this.state.currentPage === name ? 'display:block' : 'display:none';
+    const onPage = this.state.currentPage;
+
+    const researchCards = lang === 'en' ? [
+      { title: 'Fault map query', desc: '48 onshore TEM faults and 55 offshore structures on one terrain-and-bathymetry model, viewed together or by domain.' },
+      { title: 'Cross-sections', desc: 'Right-click two points to cut a section: topography, seabed, fault intersections and imported hypocentres, exported as PNG or SVG.' },
+      { title: 'GIS and 3D export', desc: 'Traces, depth lines and iso-depth contours as WGS84 Shapefiles, XYZ point clouds, or OBJ meshes for Blender.' },
+    ] : [
+      { title: '斷層地圖查詢', desc: '48 條陸上 TEM 斷層與 55 條海域構造置於同一套地形與海床模型，可分域或全部同時檢視。' },
+      { title: '地質剖面', desc: '右鍵點兩點即可切出剖面：地形、海床、斷層交線與匯入的震源點，可輸出 PNG 或 SVG。' },
+      { title: 'GIS 與 3D 匯出', desc: '斷層跡、深度線與等深線輸出為 WGS84 Shapefile、XYZ 點雲，或可直接匯入 Blender 的 OBJ 網格。' },
+    ];
+    const refList = [
+      { title: 'Slab2 — Manila and Ryukyu trench axes and subduction interfaces',
+        cite: lang === 'en' ? 'USGS Slab 2.0 interactive map (Hayes et al., 2018)' : 'USGS Slab 2.0 互動地圖（Hayes et al., 2018）',
+        url: 'https://www.usgs.gov/tools/slab20-interactive-map' },
+      { title: 'Seismogenic Structures Offshore Taiwan',
+        cite: 'Chen & Shyu (2025), Bulletin of the Seismological Society of America 116(1): 26',
+        url: 'https://pubs.geoscienceworld.org/ssa/bssa/article/116/1/26/654986/Seismogenic-Structures-Offshore-Taiwan-and-Their' },
+      { title: 'Updates to the on-land seismogenic structure source database by the Taiwan Earthquake Model (TEM) project for seismic hazard analysis of Taiwan',
+        cite: 'Shyu et al. (2020), Terrestrial, Atmospheric and Oceanic Sciences',
+        url: 'https://www.researchgate.net/publication/345032513_Updates_to_the_on-land_seismogenic_structure_source_database_by_the_Taiwan_Earthquake_Model_TEM_project_for_seismic_hazard_analysis_of_Taiwan' },
+      { title: 'A New On-Land Seismogenic Structure Source Database from the Taiwan Earthquake Model (TEM) Project for Seismic Hazard Analysis of Taiwan',
+        cite: 'Shyu et al. (2016), Terrestrial, Atmospheric and Oceanic Sciences',
+        url: 'https://www.researchgate.net/publication/305724241_A_New_On-Land_Seismogenic_Structure_Source_Database_from_the_Taiwan_Earthquake_Model_TEM_Project_for_Seismic_Hazard_Analysis_of_Taiwan' },
+      { title: 'Neotectonic architecture of Taiwan and its implications for future large earthquakes',
+        cite: 'Shyu et al. (2005), Journal of Geophysical Research',
+        url: 'https://www.researchgate.net/publication/48925192_Neotectonic_architecture_of_Taiwan_and_its_implications_for_future_large_earthquakes' },
+    ].map((r, i) => ({ ...r, n: String(i + 1).padStart(2, '0') }));
+    const howtoSteps = lang === 'en' ? [
+      { n: 1, title: 'Camera controls', desc: 'Left-drag to pan, middle-drag to rotate, wheel to zoom.' },
+      { n: 2, title: 'Single fault page', desc: 'Click a fault in the list or on the map to open its own 3D page with detailed parameters.' },
+      { n: 3, title: 'Cross-sections', desc: 'Right-click two points on the map, or type both coordinate pairs, to cut a section. Vertical exaggeration is set automatically — enter 1 for true scale.' },
+      { n: 4, title: 'Hypocentre import', desc: 'Load an earthquake catalogue (CSV or Excel) to place it in the 3D scene and on sections; the i button explains the format.' },
+    ] : [
+      { n: 1, title: '地圖視角操作', desc: '左鍵拖曳平移、中鍵旋轉、滾輪縮放，自由檢視斷層立體分布。' },
+      { n: 2, title: '單斷層頁面', desc: '點擊清單或地圖上的斷層，進入該斷層的獨立 3D 頁面，檢視細部結構與詳細資訊。' },
+      { n: 3, title: '繪製地質剖面', desc: '在地圖上按右鍵點選兩點，或直接輸入兩組經緯度即可切出剖面。垂直倍率會自動調整，輸入 1 可看真實比例。' },
+      { n: 4, title: '匯入震源點', desc: '上傳地震目錄（CSV 或 Excel），震源會放入 3D 場景並顯示於剖面；格式說明見標題旁的 i 圖示。' },
+    ];
+
+    const q = (this.state.searchQuery || '').toLowerCase();
+    const filtered = this.domainFaults().filter(f => !q || f.name.includes(this.state.searchQuery) || (f.nameE || '').toLowerCase().includes(q));
+
+    const mapTab = this.state.mapTab || 'all';
+    const tabStyle = (name) => ({
+      color: mapTab === name ? accent : 'oklch(50% 0.02 260)',
+      underline: mapTab === name ? accent : 'transparent',
+    });
+    const tabAll = tabStyle('all'), tabLocal = tabStyle('local');
+    const sidePage = this.state.sidePage || 'view';
+    const domain = this.state.domain || 'land';
+    const domainOn = (name) => domain === name;
+    const domainCount = this.domainFaults().length;
+    const pts = this.state.points || [];
+    const pointCount = pts.length;
+    const mainCount = pts.filter((p) => p.group === 'main').length;
+    const afterCount = pts.filter((p) => p.group === 'after').length;
+    const noneCount = pointCount - mainCount - afterCount;
+    const secStats = this.state.sectionStats;
+    // The export page has its own search and domain filter, independent of the map page's, so
+    // narrowing the map view does not silently hide faults from the export picker.
+    const exDomain = this.state.exportDomain || 'all';
+    const exQ = (this.state.exportQuery || '').trim();
+    const exQL = exQ.toLowerCase();
+    const exportPickList = faults
+      .filter((f) => (exDomain === 'all' ? true : exDomain === 'sea' ? f.offshore : !f.offshore))
+      .filter((f) => !exQ || f.name.includes(exQ) || (f.nameE || '').toLowerCase().includes(exQL)
+        || String(f.num ?? '').includes(exQ));
+
+    const filteredFaults = filtered.map((f, idx) => ({
+      // the structure's own catalogue number, which carries letter suffixes (54A / 54B); a running
+      // list position would renumber them and merge the two Binhai structures into one
+      seq: f.num ?? (idx + 1),
+      name: this.faultName(f),
+      region: this.faultRegion(f),
+      slipType: this.faultSlip(f),
+      rowBg: f.id === this.state.selectedFaultId ? 'oklch(96% 0.03 55)' : 'white',
+      showCheckbox: mapTab === 'local',
+      checkboxChecked: (this.state.localIds || []).includes(f.id),
+      checkboxOnChange: () => this.toggleLocal(f.id),
+      checkboxColor: 'oklch(55% 0.02 260)',
+      onSelect: () => this.setState({ selectedFaultId: f.id, currentPage: 'detail' }),
+      stopClick: (e) => e.stopPropagation(),
+    }));
+
+    // every segment's dip, shallow to deep; a flat (horizKm) segment reads as 平坦 / flat
+    const dipText = (() => {
+      const segs = currentFault.segments || [];
+      if (!segs.length) return currentFault.dip != null ? currentFault.dip + '\u00b0' : '\u2014';
+      return segs.map((s) => (s.horizKm != null ? L('平坦', 'flat') : s.dip + '\u00b0')).join(' / ');
+    })();
+    const statCells = currentFault.offshore ? [
+      { label: t.statSlip, value: this.faultSlip(currentFault) },
+      { label: t.statLength, value: currentFault.lengthKm + ' km' },
+      // measured DOWN FROM THE TRACE, i.e. from the seabed, which is how the offshore workbook
+      // reports seismogenic depth -- not depth below sea level
+      { label: t.statDepth, value: (Math.round((currentFault.depthKm || 0) * 10) / 10) + ' km' },
+      { label: t.statDip, value: dipText },
+      { label: t.statSeabed, value: (Math.round((currentFault.seabedKm || 0) * 10) / 10) + ' km' },
+    ] : [
+      { label: t.statSlip, value: currentFault.type },
+      { label: t.statLength, value: currentFault.lengthKm + ' km' },
+      // two decimals, as in the source workbook (13.76 km, not 13.8)
+      { label: t.statDepth, value: (Math.round((currentFault.depthKm || 0) * 100) / 100) + ' km' },
+      { label: t.statDip, value: dipText },
+      { label: t.statTem, value: this.temMagnitude(currentFault) },
+    ];
+
+    const formats = this.state.formats || [];
+    const fmtHintEn = { obj: 'Render fault planes in Blender, SketchUp and similar', xyz: 'WGS84 lon/lat plus elevation for every point', shp: 'Traces, depth lines and contours, in WGS84', all: 'OBJ, XYZ and Shapefile in one bundle' };
+    const fmtLabelEn = { obj: 'OBJ', xyz: 'XYZ point cloud (real coordinates)', shp: 'Shapefile', all: 'All formats' };
+    const formatOptions = formats.map(fmt => ({
+      label: lang === 'en' ? (fmtLabelEn[fmt.id] || fmt.label) : fmt.label,
+      hint: lang === 'en' ? (fmtHintEn[fmt.id] || fmt.hint) : fmt.hint,
+      onClick: () => this.setState({ cartFormat: fmt.id }),
+      bg: this.state.cartFormat === fmt.id ? 'oklch(96% 0.03 55)' : 'white',
+      borderColor: this.state.cartFormat === fmt.id ? accent : 'oklch(90% 0.01 260)',
+      textColor: this.state.cartFormat === fmt.id ? 'oklch(35% 0.13 55)' : 'oklch(22% 0.02 260)',
+    }));
+
+    const cartItems = this.state.cart.map(id => {
+      const f = this.getFault(id);
+      return f ? {
+        id: f.id, name: this.faultName(f),
+        meta: this.faultRegion(f) + ' · ' + this.faultSlip(f) + ' · ' + L('深度 ', 'depth ') + f.depthKm + ' km',
+        onRemove: () => this.setState(s => ({ cart: s.cart.filter(x => x !== id) })),
+      } : null;
+    }).filter(Boolean);
+
+    const enDesc = (f) => {
+      if (!f || !f.name) return '';
+      const region = REGION_EN[f.region] || f.region;
+      const slip = this.faultSlip(f);
+      const depth = Math.round((Number(f.depthKm) || 0) * 10) / 10;
+      const hasRegion = region && region !== '—';
+      return slip + ' fault' + (hasRegion ? ' in ' + region : '') + ' · ' + f.lengthKm + ' km long · dipping ' + f.dip + '° toward ' + (AZ_EN[f.dipDir] || f.dipDir) + ' to a depth of ' + depth + ' km.';
+    };
+    const qps = this.state.queryPoints || [];
+
+    return {
+      t, isMobile,
+      setLangZh: () => this.setState({ lang: 'zh' }),
+      setLangEn: () => this.setState({ lang: 'en' }),
+      langZhColor: lang === 'zh' ? 'white' : 'rgba(255,255,255,0.42)',
+      langEnColor: lang === 'en' ? 'white' : 'rgba(255,255,255,0.42)',
+
+      homeDisplayStyle: page('home'),
+      mapDisplayStyle: page('map'),
+      detailDisplayStyle: page('detail'),
+      exportDisplayStyle: page('export'),
+      goHome: () => this.setState({ currentPage: 'home' }),
+      goMap: () => this.setState({ currentPage: 'map' }),
+      goExport: () => this.setState({ currentPage: 'export' }),
+
+      stopPropagation: (e) => e.stopPropagation(),
+      cartEmpty: this.state.cart.length === 0,
+      cartCountLabel: this.state.cart.length > 0 ? String(this.state.cart.length) : '',
+      cartItems,
+      cartFormatOptions: formatOptions.map(o => ({ ...o })),
+      showContourPicker: ['shp', 'all'].includes(this.state.cartFormat || 'all'),
+      contourTitle: L('斷層面等深線', 'Fault-plane depth contours'),
+      contourHint: L('Shapefile 一律附 depth_lines（轉折處與底部的幾何深度線）。以下可再加上固定間距的內插等深線。', 'The Shapefile always includes depth_lines (the geometry\'s own kink and base lines). Below you can add interpolated contours at a fixed interval.'),
+      contourOptions: [0, 1, 2, 5].map((km) => ({
+        label: km === 0 ? L('不輸出', 'Off') : km + ' km',
+        onClick: () => this.setState({ contourKm: km }),
+        bg: (this.state.contourKm ?? 2) === km ? 'oklch(96% 0.03 55)' : 'white',
+        borderColor: (this.state.contourKm ?? 2) === km ? accent : 'oklch(90% 0.01 260)',
+        textColor: (this.state.contourKm ?? 2) === km ? 'oklch(35% 0.13 55)' : 'oklch(30% 0.02 260)',
+      })),
+      clearCart: () => this.setState({ cart: [] }),
+      selectedListTitle: L('已選取斷層（' + this.state.cart.length + '）', 'Selected faults (' + this.state.cart.length + ')'),
+      exportPickHint: L('依名稱勾選要匯出的斷層，目前已選取 ' + this.state.cart.length + ' 個。', 'Tick the faults you want by name — ' + this.state.cart.length + ' selected.'),
+      doExportLabel: L('立即匯出（' + this.state.cart.length + '）', 'Export now (' + this.state.cart.length + ')'),
+      doExport: () => this.runExport(),
+      exportQuery: this.state.exportQuery || '',
+      onExportQuery: (e) => this.setState({ exportQuery: e.target.value }),
+      setExportDomainLand: () => this.setState({ exportDomain: 'land' }),
+      setExportDomainAll: () => this.setState({ exportDomain: 'all' }),
+      setExportDomainSea: () => this.setState({ exportDomain: 'sea' }),
+      exDomainLandBg: exDomain === 'land' ? 'white' : 'transparent',
+      exDomainLandColor: exDomain === 'land' ? accent : 'oklch(52% 0.02 260)',
+      exDomainAllBg: exDomain === 'all' ? 'white' : 'transparent',
+      exDomainAllColor: exDomain === 'all' ? accent : 'oklch(52% 0.02 260)',
+      exDomainSeaBg: exDomain === 'sea' ? 'white' : 'transparent',
+      exDomainSeaColor: exDomain === 'sea' ? accent : 'oklch(52% 0.02 260)',
+      exportPickList: exportPickList.map((f) => {
+        const on = this.state.cart.includes(f.id);
+        return {
+          id: f.id,
+          num: (f.offshore ? 'O' : 'L') + String(f.num ?? '').padStart(2, '0'),
+          numColor: f.offshore ? 'oklch(48% 0.11 235)' : 'oklch(48% 0.11 55)',
+          name: this.faultName(f),
+          meta: (f.lengthKm ?? '?') + ' km',
+          checked: on,
+          rowBg: on ? 'oklch(95% 0.04 150)' : 'transparent',
+          onToggle: () => this.toggleCart(f.id),
+        };
+      }),
+      selectAllVisible: () => {
+        const ids = exportPickList.map((f) => f.id);
+        this.setState({ cart: [...new Set([...this.state.cart, ...ids])] });
+      },
+      exportListFooter: L(
+        '\u986f\u793a ' + exportPickList.length + ' \u689d\uff0c\u5df2\u9078 ' + this.state.cart.length + ' \u689d',
+        'Showing ' + exportPickList.length + ', selected ' + this.state.cart.length),
+
+      researchCards, howtoSteps, refList,
+      heroParallaxRef: (this.heroParallaxRef = this.heroParallaxRef || React.createRef()),
+
+      searchQuery: this.state.searchQuery,
+      onSearchChange: (e) => this.setState({ searchQuery: e.target.value }),
+      filteredFaults,
+
+      // switching range clears the per-fault selection: those ids belong to the previous range, so
+      // staying in 局部顯示 left the map empty with no hint why
+      setDomainLand: () => this.setState({ domain: 'land', mapTab: 'all', localIds: [] }),
+      setDomainAll: () => this.setState({ domain: 'all', mapTab: 'all', localIds: [] }),
+      setDomainSea: () => this.setState({ domain: 'sea', mapTab: 'all', localIds: [] }),
+      domainLandBg: domainOn('land') ? 'white' : 'transparent',
+      domainLandColor: domainOn('land') ? accent : 'oklch(52% 0.02 260)',
+      domainLandShadow: domainOn('land') ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+      domainAllBg: domainOn('all') ? 'white' : 'transparent',
+      domainAllColor: domainOn('all') ? accent : 'oklch(52% 0.02 260)',
+      domainAllShadow: domainOn('all') ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+      domainSeaBg: domainOn('sea') ? 'white' : 'transparent',
+      domainSeaColor: domainOn('sea') ? accent : 'oklch(52% 0.02 260)',
+      domainSeaShadow: domainOn('sea') ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+      domainCountLabel: L(domainCount + ' 條斷層 / 構造', domainCount + ' structures'),
+
+      markerRadius: this.state.markerRadius,
+      markerRadiusLabel: (this.state.markerRadius || 700) + ' m',
+      // redraws both the coordinate markers and the imported point cloud, which share the radius
+      onMarkerRadius: (e) => this.setState({ markerRadius: Number(e.target.value) }, () => {
+        this.drawQueryPoints();
+        this.applyPointCloud();
+      }),
+
+      onPointFiles: (ev) => this.onPointFiles(ev),
+      clearPoints: () => this.clearPoints(),
+      hasPoints: pointCount > 0,
+      pointsSummary: L(
+        pointCount + ' 點（主震 ' + mainCount + '、餘震 ' + afterCount + '、未分組 ' + noneCount + '）',
+        pointCount + ' points (' + mainCount + ' main, ' + afterCount + ' after, ' + noneCount + ' ungrouped)'),
+
+      toggleSectionPick: () => this.toggleSectionPick(),
+      sectionPicking: (this.state.sectionEnds || []).length > 0,
+      sectionPickLabel: L('清除點選', 'Clear picked points'),
+      sectionPickBg: 'oklch(94% 0.01 260)',
+      sectionPickColor: 'oklch(30% 0.02 260)',
+      sectionStatusText: (this.state.sectionEnds || []).length === 1
+        ? L('已點選 A 端 — 按右鍵點選 B 端', 'End A set — right-click for end B')
+        : L('在地圖上按右鍵點選兩點，或直接輸入兩組經緯度', 'Right-click two points on the map, or type two coordinate pairs'),
+      secA: this.state.secA || '',
+      secB: this.state.secB || '',
+      onSecA: (e) => this.setState({ secA: e.target.value }),
+      onSecB: (e) => this.setState({ secB: e.target.value }),
+      // the two section controls live in the panel itself; the corridor only matters for
+      // hypocentres, so it appears only once the user has loaded some
+      hasPointsForCorridor: (this.state.points || []).length > 0,
+      pointsHelpOpen: !!this.state.pointsHelpOpen,
+      openPointsHelp: () => this.setState({ pointsHelpOpen: true }),
+      closePointsHelp: () => this.setState({ pointsHelpOpen: false }),
+      stopClick: (e) => e.stopPropagation(),
+      pointsHelpCols: [
+        { key: 'lon / 經度', req: true, desc: L('必填。WGS84 十進位度，例 121.512', 'Required. WGS84 decimal degrees, e.g. 121.512') },
+        { key: 'lat / 緯度', req: true, desc: L('必填。WGS84 十進位度，例 23.874', 'Required. WGS84 decimal degrees, e.g. 23.874') },
+        { key: 'depth / 深度', req: true, desc: L('必填。單位公里，正數代表地表以下', 'Required. Kilometres, positive = below the surface') },
+        { key: 'mag / 規模', req: false, desc: L('選填。地震規模，可接受 ML、Mw 等欄名', 'Optional. Magnitude; ML, Mw etc. are also recognised') },
+        { key: 'group / 分組', req: false, desc: L('選填。含「主震 / main」者為紅點，其他字串為餘震藍點，空白為紫點', 'Optional. Values containing main are red, other text is a blue aftershock, blank is purple') },
+        { key: 'time / 時間', req: false, desc: L('選填。發生時間，原樣保留', 'Optional. Origin time, kept as given') },
+      ].map((c) => ({ ...c, keyColor: c.req ? 'oklch(45% 0.13 55)' : 'oklch(45% 0.02 260)' })),
+      pointsHelpExample: 'lon,lat,depth,mag,group,time\n121.512,23.874,12.4,5.8,main,2024-04-03 07:58\n121.498,23.901,15.1,4.2,after,2024-04-03 08:11\n121.530,23.860,9.7,3.6,after,2024-04-03 09:02',
+      showExagNotice: !!this.state.sectionOpen && (this.state.sectionVExag || 1) !== 1
+        && !this.state.exagNoticeDismissed && !this._exagMuted,
+      exagNoticeText: (() => {
+        const v = this.state.sectionVExag || 1;
+        // below 1 the section is vertically COMPRESSED, so dips read gentler, not steeper
+        if (v < 1) {
+          const inv = (1 / v).toFixed(1);
+          return L('目前剖面為垂直壓縮 ' + v + '×（約 1/' + inv + '），以便完整顯示剖面長度，斷層傾角會比實際緩。若要看真實比例，請在「垂直倍率」輸入 1。',
+            'This section is vertically compressed ' + v + '× (about 1/' + inv + ') so its full length fits, which makes dips look gentler than they are. Enter 1 in the V. exag. field for true scale.');
+        }
+        return L('目前剖面為垂直放大 ' + v + '×，以便完整顯示深度範圍，斷層傾角會比實際陡。若要看真實比例，請在「垂直倍率」輸入 1。',
+          'This section is vertically exaggerated ' + v + '× so the whole depth range fits, which makes dips look steeper than they are. Enter 1 in the V. exag. field for true scale.');
+      })(),
+      dismissExagNotice: () => this.setState({ exagNoticeDismissed: true }),
+      muteExagNotice: () => {
+        try { localStorage.setItem('faults3d.exagNoticeMuted', '1'); } catch (e) {}
+        this._exagMuted = true;
+        this.setState({ exagNoticeDismissed: true });
+      },
+      vExagField: this.state.vExagField ?? String(this.state.sectionVExag ?? 1),
+      onVExagField: (e) => this.setState({ vExagField: e.target.value }),
+      applyVExag: () => this.applySectionScale(),
+      onVExagKey: (e) => { if (e.key === 'Enter') this.applySectionScale(); },
+      corridorField: this.state.corridorField ?? String(this.state.corridorKm ?? 10),
+      onCorridorField: (e) => this.setState({ corridorField: e.target.value }),
+      applyCorridor: () => this.applySectionScale(),
+      onCorridorKey: (e) => { if (e.key === 'Enter') this.applySectionScale(); },
+      drawSection: () => this.drawSection(),
+      clearSection: () => this.clearSection(),
+      closeSection: () => this.closeSection(),
+      downloadSectionPng: () => this.downloadSectionPng(),
+      downloadSectionSvg: () => this.downloadSectionSvg(),
+      sectionOpen: !!this.state.sectionOpen,
+      sectionHost: (el) => {
+        this._sectionHost = el;
+        // the panel mounts after the SVG is built, so paint it as soon as the host appears
+        if (el && this._sectionSvg) el.innerHTML = this._sectionSvg;
+      },
+      sectionTitle: secStats
+        ? L('剖面 A–B　' + secStats.lengthKm.toFixed(1) + ' km　方位 ' + secStats.azimuth.toFixed(0) + '°　斷層 ' + secStats.faultsIn + '　震源 ' + secStats.pointsIn,
+            'Section A–B  ' + secStats.lengthKm.toFixed(1) + ' km  azimuth ' + secStats.azimuth.toFixed(0) + '°  ' + secStats.faultsIn + ' faults  ' + secStats.pointsIn + ' hypocentres')
+        : t.sectionLabel,
+
+      // the pill treatment marks the CURRENT page -- it used to be hard-coded onto the export tab,
+      // which read as "export list is selected" no matter where the user actually was
+      // NB: page() returns a CSS display string, which is always truthy -- compare the page name
+      // itself, or every tab lights up at once
+      navHomeBg: onPage === 'home' ? 'rgba(255,255,255,0.14)' : 'transparent',
+      navHomeOpacity: onPage === 'home' ? 1 : 0.7,
+      navMapBg: onPage === 'map' ? 'rgba(255,255,255,0.14)' : 'transparent',
+      navMapOpacity: onPage === 'map' ? 1 : 0.7,
+      navExportBg: onPage === 'export' ? 'rgba(255,255,255,0.14)' : 'transparent',
+      navExportOpacity: onPage === 'export' ? 1 : 0.7,
+
+      setSideView: () => this.setState({ sidePage: 'view' }),
+      setSideAdd: () => this.setState({ sidePage: 'add' }),
+      setSideEdit: () => this.setState({ sidePage: 'edit' }),
+      viewPaneStyle: sidePage === 'view' ? 'display:flex' : 'display:none',
+      addPaneStyle: sidePage === 'add' ? 'display:flex' : 'display:none',
+      editPaneStyle: sidePage === 'edit' ? 'display:flex' : 'display:none',
+      sideViewColor: sidePage === 'view' ? accent : 'oklch(50% 0.02 260)',
+      sideViewUnderline: sidePage === 'view' ? accent : 'transparent',
+      sideAddColor: sidePage === 'add' ? accent : 'oklch(50% 0.02 260)',
+      sideAddUnderline: sidePage === 'add' ? accent : 'transparent',
+      sideEditColor: sidePage === 'edit' ? accent : 'oklch(50% 0.02 260)',
+      sideEditUnderline: sidePage === 'edit' ? accent : 'transparent',
+
+      setTabAll: () => this.setState({ mapTab: 'all' }),
+      setTabLocal: () => this.setState({ mapTab: 'local' }),
+      tabAllColor: tabAll.color, tabAllUnderline: tabAll.underline,
+      tabLocalColor: tabLocal.color, tabLocalUnderline: tabLocal.underline,
+
+      qLon: this.state.qLon, qLat: this.state.qLat, qDepth: this.state.qDepth,
+      onQLon: (e) => this.setState({ qLon: e.target.value }),
+      onQLat: (e) => this.setState({ qLat: e.target.value }),
+      onQDepth: (e) => this.setState({ qDepth: e.target.value }),
+      locateQueryPoint: () => this.locateQueryPoint(),
+      clearQueryPoint: () => this.clearQueryPoint(),
+      queryPointItems: qps.map((qp, i) => ({ color: qp.color, text: qp.lon.toFixed(4) + ', ' + qp.lat.toFixed(4) + ' · ' + L('深度 ', 'depth ') + qp.depth + ' km' })),
+
+      showTrench: this.state.showTrench !== false,
+      onShowTrench: (e) => this.setState({ showTrench: e.target.checked }, () => this.applyTrenchOverlay()),
+      vertExag: this.state.vertExag,
+      vertExagLabel: (Number(this.state.vertExag) || 1).toFixed(1) + '×',
+      onVertExag: (e) => this.setState({ vertExag: parseFloat(e.target.value) }),
+      terrainOpacity: this.state.terrainOpacity,
+      terrainOpacityLabel: Math.round((Number(this.state.terrainOpacity) || 1) * 100) + '%',
+      onTerrainOpacity: (e) => this.setState({ terrainOpacity: parseFloat(e.target.value) }),
+      toggleTypeColors: () => this.setState(s => ({ typeColors: !s.typeColors })),
+      typeColorsMark: this.state.typeColors ? '\u2713' : '',
+      typeColorsBg: this.state.typeColors ? accent : 'white',
+      typeColorsBorder: this.state.typeColors ? accent : 'oklch(80% 0.01 260)',
+      selectCoastline: () => this.setState({ lineSource: 'coastline' }),
+      selectCounty: () => this.setState({ lineSource: 'county' }),
+      coastlineBg: this.state.lineSource === 'coastline' ? accent : 'white',
+      coastlineBorder: this.state.lineSource === 'coastline' ? accent : 'oklch(85% 0.01 260)',
+      coastlineText: this.state.lineSource === 'coastline' ? 'white' : 'oklch(35% 0.02 260)',
+      countyBg: this.state.lineSource === 'county' ? accent : 'white',
+      countyBorder: this.state.lineSource === 'county' ? accent : 'oklch(85% 0.01 260)',
+      countyText: this.state.lineSource === 'county' ? 'white' : 'oklch(35% 0.02 260)',
+
+      compassDeg: this.state.compassDeg || 0,
+      scaleBarWidthPx: this.state.scaleBarWidthPx || 80,
+      scaleBarLabel: this.state.scaleBarLabel || '',
+      detailCompassDeg: this.state.detailCompassDeg || 0,
+      detailScaleBarWidthPx: this.state.detailScaleBarWidthPx || 80,
+      detailScaleBarLabel: this.state.detailScaleBarLabel || '',
+      rulerHeightPx: this.state.rulerHeightPx || 0,
+      depthTicks: this.state.depthTicks || [],
+
+      mapLabels: this.state.mapLabels || [],
+      mapLabelLeaders: (this.state.mapLabels || []).filter((lb) => lb.leader),
+      showAnyLabels: this.state.labelMode !== 'none',
+      showNumberLabels: this.state.labelMode === 'number',
+      showNameLabels: this.state.labelMode === 'name',
+      setLabelNumber: () => this.setState({ labelMode: 'number' }),
+      setLabelName: () => this.setState({ labelMode: 'name' }),
+      setLabelNone: () => this.setState({ labelMode: 'none' }),
+      labelNumBorder: this.state.labelMode === 'number' ? accent : 'oklch(85% 0.01 260)',
+      labelNumBg: this.state.labelMode === 'number' ? accent : 'white',
+      labelNumColor: this.state.labelMode === 'number' ? 'oklch(20% 0.02 260)' : 'oklch(40% 0.02 260)',
+      labelNameBorder: this.state.labelMode === 'name' ? accent : 'oklch(85% 0.01 260)',
+      labelNameBg: this.state.labelMode === 'name' ? accent : 'white',
+      labelNameColor: this.state.labelMode === 'name' ? 'oklch(20% 0.02 260)' : 'oklch(40% 0.02 260)',
+      labelNoneBorder: this.state.labelMode === 'none' ? accent : 'oklch(85% 0.01 260)',
+      labelNoneBg: this.state.labelMode === 'none' ? accent : 'white',
+      labelNoneColor: this.state.labelMode === 'none' ? 'oklch(20% 0.02 260)' : 'oklch(40% 0.02 260)',
+
+      exportMapJpg: () => this.openJpgDialog(),
+      jpgDialogOpen: this.state.jpgDialogOpen,
+      closeJpgDialog: () => this.setState({ jpgDialogOpen: false }),
+      toggleJpgCompass: () => this.setState(s => ({ jpgCompass: !s.jpgCompass })),
+      toggleJpgScale: () => this.setState(s => ({ jpgScale: !s.jpgScale })),
+      toggleJpgLegend: () => this.setState(s => ({ jpgLegend: !s.jpgLegend })),
+      jpgCompassMark: this.state.jpgCompass ? '\u2713' : '',
+      jpgScaleMark: this.state.jpgScale ? '\u2713' : '',
+      jpgLegendMark: this.state.jpgLegend ? '\u2713' : '',
+      jpgCompassBg: this.state.jpgCompass ? accent : 'white',
+      jpgScaleBg: this.state.jpgScale ? accent : 'white',
+      jpgLegendBg: this.state.jpgLegend ? accent : 'white',
+      jpgCompassBorder: this.state.jpgCompass ? accent : 'oklch(80% 0.01 260)',
+      jpgScaleBorder: this.state.jpgScale ? accent : 'oklch(80% 0.01 260)',
+      jpgLegendBorder: this.state.jpgLegend ? accent : 'oklch(80% 0.01 260)',
+      jpgLegendHint: L('圖上數字與斷層名稱的對應清單（共 ' + ((this.state.mapLabels || []).length) + ' 條）', 'Number-to-name key for the labels on the map (' + ((this.state.mapLabels || []).length) + ' faults)'),
+      confirmExportJpg: () => { this.setState({ jpgDialogOpen: false }); setTimeout(() => this.exportMapJpg(), 60); },
+
+      sidebarDisplay: this.state.sidebarCollapsed ? 'none' : 'flex',
+      sidebarToggleLabel: this.state.sidebarCollapsed ? L('顯示側邊面板', 'Show panel') : L('收起側邊面板', 'Hide panel'),
+      sidebarArrowSide: this.state.sidebarCollapsed ? 'left' : 'right',
+      toggleSidebar: () => {
+        this.setState({ sidebarCollapsed: !this.state.sidebarCollapsed }, () => {
+          setTimeout(() => { if (this._mapStage && this._mapStage.refit) this._mapStage.refit(); }, 60);
+        });
+      },
+      mapFlexDirection: isMobile ? 'column' : 'row',
+      sidebarWidth: isMobile ? '100%' : '320px',
+      sidebarMaxHeight: isMobile ? '360px' : 'none',
+      mapAreaHeight: isMobile ? 'auto' : 'calc(100vh - 58px)',
+      mapMinHeight: isMobile ? '360px' : '0',
+
+      currentFaultName: this.faultName(currentFault),
+      currentFaultActivity: lang === 'en' ? (currentFault.activityEn || 'TEM seismogenic structure') : currentFault.activity,
+      currentFaultDesc: lang === 'en' ? enDesc(currentFault) : currentFault.desc,
+      currentInCart: this.state.cart.includes(this.state.selectedFaultId),
+      toggleCurrentCart: () => this.toggleCart(this.state.selectedFaultId),
+      addThisLabel: L('將「' + this.faultName(currentFault) + '」加入清單', 'Add "' + this.faultName(currentFault) + '" to the list'),
+      goExportLabel: L('前往匯出清單（' + this.state.cart.length + '）', 'Go to export list (' + this.state.cart.length + ')'),
+      statCells, formatOptions,
+      detailGridCols: isMobile ? '1fr' : '1.6fr 1fr',
+
+      openPhotoModal: () => this.setState({ photoModalOpen: true }),
+      closePhotoModal: () => this.setState({ photoModalOpen: false }),
+      closePhotoBackdrop: () => this.setState({ photoModalOpen: false }),
+      photoModalOpen: this.state.photoModalOpen,
+      photoMetaLine: currentFault.dip + '° dip ' + (lang === 'en' ? (AZ_EN[currentFault.dipDir] || currentFault.dipDir) : currentFault.dipDir) + ' · ' + new Date().toISOString().slice(0, 10),
+      downloadPhotoDemo: () => this.showToast(L('下載示意：實際輸出將於資料串接後啟用', 'Download demo: enabled once the data pipeline is connected')),
+
+      toast: this.state.toast,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

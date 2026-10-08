@@ -13871,7 +13871,7 @@ export const FAULTS = RAW.map((f) => {
 export const EXPORT_FORMATS = [
   { id: 'obj', label: 'OBJ', hint: '匯入 Blender、SketchUp 等軟體渲染斷層面' },
   { id: 'xyz', label: 'XYZ 點雲（真實座標）', hint: '每點為 WGS84 經緯度與高程，供空間分析' },
-  { id: 'shp', label: 'Shapefile', hint: '跡線、深度線與等深線，WGS84' },
+  { id: 'shp', label: 'Shapefile', hint: '跡線、3D 斷層面、深度線與等深線，WGS84' },
   { id: 'all', label: '全部格式', hint: 'OBJ、XYZ、Shapefile 一次打包' },
 ];
 

@@ -2167,11 +2167,11 @@ class Component extends DCLogic {
     const researchCards = lang === 'en' ? [
       { title: 'Fault map query', desc: '48 onshore TEM faults and 55 offshore structures on one terrain-and-bathymetry model, viewed together or by domain.' },
       { title: 'Cross-sections', desc: 'Right-click two points to cut a section: topography, seabed, fault intersections and imported hypocentres, exported as PNG or SVG.' },
-      { title: 'GIS and 3D export', desc: 'Traces, depth lines and iso-depth contours as WGS84 Shapefiles, XYZ point clouds, or OBJ meshes for Blender.' },
+      { title: 'GIS and 3D export', desc: 'Traces, 3D fault planes, depth lines and iso-depth contours as WGS84 Shapefiles, XYZ point clouds, or OBJ meshes for Blender.' },
     ] : [
       { title: '斷層地圖查詢', desc: '48 條陸上 TEM 斷層與 55 條海域構造置於同一套地形與海床模型，可分域或全部同時檢視。' },
       { title: '地質剖面', desc: '右鍵點兩點即可切出剖面：地形、海床、斷層交線與匯入的震源點，可輸出 PNG 或 SVG。' },
-      { title: 'GIS 與 3D 匯出', desc: '斷層跡、深度線與等深線輸出為 WGS84 Shapefile、XYZ 點雲，或可直接匯入 Blender 的 OBJ 網格。' },
+      { title: 'GIS 與 3D 匯出', desc: '斷層跡、3D 斷層面、深度線與等深線輸出為 WGS84 Shapefile、XYZ 點雲，或可直接匯入 Blender 的 OBJ 網格。' },
     ];
     const refList = [
       { title: 'Slab2 — Manila and Ryukyu trench axes and subduction interfaces',
@@ -2272,7 +2272,7 @@ class Component extends DCLogic {
     ];
 
     const formats = this.state.formats || [];
-    const fmtHintEn = { obj: 'Render fault planes in Blender, SketchUp and similar', xyz: 'WGS84 lon/lat plus elevation for every point', shp: 'Traces, depth lines and contours, in WGS84', all: 'OBJ, XYZ and Shapefile in one bundle' };
+    const fmtHintEn = { obj: 'Render fault planes in Blender, SketchUp and similar', xyz: 'WGS84 lon/lat plus elevation for every point', shp: 'Traces, 3D fault planes, depth lines and contours, in WGS84', all: 'OBJ, XYZ and Shapefile in one bundle' };
     const fmtLabelEn = { obj: 'OBJ', xyz: 'XYZ point cloud (real coordinates)', shp: 'Shapefile', all: 'All formats' };
     const formatOptions = formats.map(fmt => ({
       label: lang === 'en' ? (fmtLabelEn[fmt.id] || fmt.label) : fmt.label,

@@ -13,6 +13,7 @@
 // CRS -- every dataset is written twice, WGS84 geographic (EPSG:4326) and TWD97 TM2 (EPSG:3826),
 // except OBJ, which is a local metric frame (see below) with its origin stated in both.
 import { lonLatToTWD97 } from './dem.js';
+import { clipPointRows } from './fault-truncation.js';
 
 const DEG = Math.PI / 180;
 const metersPerDegLat = (lat) => 111132.92 - 559.82 * Math.cos(2 * lat * DEG) + 1.175 * Math.cos(4 * lat * DEG);
@@ -79,7 +80,8 @@ function faultStrands(fault, dem, bathy) {
     .filter((p) => p && p.length > 1);
   const dir = dipDirection(parts, fault.dipAzimuth ?? 90);
   return parts.map((p) => {
-    const rows = strandRows(fault, p, dem, bathy, dir);
+    let rows = strandRows(fault, p, dem, bathy, dir);
+    if (!fault.offshore && dem) rows = clipPointRows(fault, rows, dem); // truncated faults
     return { rows, trace: rows[0] };
   });
 }
@@ -346,8 +348,29 @@ function faultShapefiles(fault, strands, mag, crs, contourKm) {
   const traceRecs = [], traceAttrs = [];
   const contRecs = [], contAttrs = [];
   const hingeRecs = [], hingeAttrs = [];
+  const planeRecs = [], planeAttrs = [];
   strands.forEach((s, si) => {
     traceRecs.push(s.trace.map(proj));
+    // Fault plane as PolygonZ triangles (two per grid cell). Triangles are always planar, so QGIS 3D
+    // and other viewers never have to re-triangulate a warped quad. Cells collapsed by truncation
+    // (zero 3D area) are skipped.
+    for (let r = 0; r < s.rows.length - 1; r++) {
+      const A = s.rows[r], B = s.rows[r + 1];
+      for (let c = 0; c < A.length - 1; c++) {
+        [[A[c], A[c + 1], B[c + 1]], [A[c], B[c + 1], B[c]]].forEach((tri) => {
+          let t = tri.map(proj);
+          const m = tri.map((p) => ({ x: p.lon * mPerDegLon(p.lat), y: p.lat * metersPerDegLat(p.lat), z: p.z }));
+          const u = { x: m[1].x - m[0].x, y: m[1].y - m[0].y, z: m[1].z - m[0].z };
+          const v = { x: m[2].x - m[0].x, y: m[2].y - m[0].y, z: m[2].z - m[0].z };
+          const nx = u.y * v.z - u.z * v.y, ny = u.z * v.x - u.x * v.z, nz = u.x * v.y - u.y * v.x;
+          if (Math.hypot(nx, ny, nz) < 1) return; // < 0.5 m²
+          if (nz > 0) t = [t[0], t[2], t[1]]; // ESRI outer rings run clockwise in plan view
+          planeRecs.push([...t, t[0]]);
+          const zs = t.map((p) => p.z);
+          planeAttrs.push(attrRow(fault, mag, si + 1, r + 1, Math.max(...zs), Math.min(...zs)));
+        });
+      }
+    }
     // The geometry's own depth lines: every row below the trace sits at a segment boundary --
     // a dip change (kink) or the base of the fault. A handful of lines per fault, and unlike the
     // interpolated contours they are original data, not a resampling of it.
@@ -376,6 +399,7 @@ function faultShapefiles(fault, strands, mag, crs, contourKm) {
     ];
   };
   const out = [...set('trace', 13, traceRecs, traceAttrs)];
+  if (planeRecs.length) out.push(...set('plane', 15, planeRecs, planeAttrs));
   if (hingeRecs.length) out.push(...set('depth_lines', 13, hingeRecs, hingeAttrs));
   if (contRecs.length) out.push(...set('contour_' + String(contourKm).replace('.', 'p') + 'km', 13, contRecs, contAttrs));
   return out;

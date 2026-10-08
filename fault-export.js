@@ -335,6 +335,14 @@ const SHP_FIELDS = [
   { name: 'Z_BOT_M', type: 'N', size: 12, dec: 1 },
 ];
 
+// The plane layer adds each triangle's true 3D area and the whole fault's total (sum of its triangles),
+// so the plane can be measured directly in GIS without reprojecting a geographic layer.
+const PLANE_FIELDS = [
+  ...SHP_FIELDS,
+  { name: 'AREA_M2', type: 'N', size: 14, dec: 1 },
+  { name: 'FLT_KM2', type: 'N', size: 12, dec: 3 },
+];
+
 function attrRow(f, mag, part, seg, zTop, zBot) {
   return { ID: f.id, NAME: f.name, NAME_EN: f.nameE || '', Z_TOP_M: zTop, Z_BOT_M: zBot };
 }
@@ -367,7 +375,9 @@ function faultShapefiles(fault, strands, mag, crs, contourKm) {
           if (nz > 0) t = [t[0], t[2], t[1]]; // ESRI outer rings run clockwise in plan view
           planeRecs.push([...t, t[0]]);
           const zs = t.map((p) => p.z);
-          planeAttrs.push(attrRow(fault, mag, si + 1, r + 1, Math.max(...zs), Math.min(...zs)));
+          const row = attrRow(fault, mag, si + 1, r + 1, Math.max(...zs), Math.min(...zs));
+          row.AREA_M2 = Math.hypot(nx, ny, nz) / 2;
+          planeAttrs.push(row);
         });
       }
     }
@@ -390,16 +400,20 @@ function faultShapefiles(fault, strands, mag, crs, contourKm) {
     traceAttrs.push(attrRow(fault, mag, si + 1, 0, Math.max(...z), Math.min(...z)));
   });
   const prj = crs === 'twd97' ? PRJ_TWD97 : PRJ_WGS84;
-  const set = (base, type, recs, attrs) => {
+  const set = (base, type, recs, attrs, fields = SHP_FIELDS) => {
     const { shp, shx } = shpPair(type, recs);
     return [
       [base + '.shp', shp], [base + '.shx', shx],
-      [base + '.dbf', dbf(SHP_FIELDS, attrs)],
+      [base + '.dbf', dbf(fields, attrs)],
       [base + '.prj', prj], [base + '.cpg', 'UTF-8'],
     ];
   };
   const out = [...set('trace', 13, traceRecs, traceAttrs)];
-  if (planeRecs.length) out.push(...set('plane', 15, planeRecs, planeAttrs));
+  if (planeRecs.length) {
+    const totalKm2 = planeAttrs.reduce((a, r) => a + r.AREA_M2, 0) / 1e6;
+    planeAttrs.forEach((r) => { r.FLT_KM2 = totalKm2; });
+    out.push(...set('plane', 15, planeRecs, planeAttrs, PLANE_FIELDS));
+  }
   if (hingeRecs.length) out.push(...set('depth_lines', 13, hingeRecs, hingeAttrs));
   if (contRecs.length) out.push(...set('contour_' + String(contourKm).replace('.', 'p') + 'km', 13, contRecs, contAttrs));
   return out;
